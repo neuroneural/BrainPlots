@@ -23,7 +23,7 @@ sns.set_palette(palette = color)
 # In[53]:
 
 
-pre = '../data/MeshCollisionData/mesh-intersection/'
+pre = '../../data/MeshCollisionData/mesh-intersection/'
 
 
 # In[54]:
@@ -64,7 +64,7 @@ df['f1_update'] = df['f1'].apply(lambda x:x.split('/')[-1])
 # In[58]:
 
 
-pre2 = '../data/MeshCollisionData/self-Intersection/'
+pre2 = '../../data/MeshCollisionData/self-Intersection/'
 f1 = pre2 + 'SelfIntersectionGTruthOutputs-lh-white.csv'
 f2 = pre2 + 'SelfIntersectionGTruthOutputs-LH-PIAL.csv'
 df1, df2 = pd.read_csv(f1),pd.read_csv(f2)
