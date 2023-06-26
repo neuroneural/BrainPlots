@@ -1,0 +1,72 @@
+count files:  
+```ls -l | wc -l```
+
+
+
+
+PATH of predicted files (.stl)
+
+
+cortexode
+lh_white: /data/users2/llu13/output/cortexode/pred/lh_white
+lh_pial: /data/users2/llu13/output/cortexode/pred/lh_pial
+
+
+corticalflow
+/data/users2/llu13/output/corticalflow/cfpp/lh_white
+/data/users2/llu13/output/corticalflow/cfpp/lh_pial
+
+
+deepcsr
+/data/users2/washbee/speedrun/outputdirs/deepcsr-output_dir-timing/checkpoints/test-set/lh_pial
+/data/users2/washbee/speedrun/outputdirs/deepcsr-output_dir-timing/checkpoints/test-set/lh_white
+
+
+pialNN
+/data/users2/washbee/speedrun/PialNN_fork/ckpts/eval_bak/lh_pial
+
+
+topofit
+/data/users2/llu13/output/topofit/truth/pred/lh_white
+
+
+vox2cortex
+/data/users2/washbee/speedrun/Vox2Cortex_fork/experiments/hcp/test_template_42016_DATASET_NAME/meshes/lh_pial/epoch81
+/data/users2/washbee/speedrun/Vox2Cortex_fork/experiments/hcp/test_template_42016_DATASET_NAME/meshes/lh_white/epoch81
+
+freesurfer
+/data/users2/llu13/output/cortexode/truth/samples/converted/lh_pial/ 
+/data/users2/llu13/output/cortexode/truth/samples/converted/lh_white/ 
+
+
+
+
+
+
+
+(Python) CMDs:
+
+
+python examples/detect_and_plot_collisions.py /data/users2/washbee/speedrun/outputdirs/deepcsr-output_dir-timing/checkpoints/test-set/lh_white collision_data_csv/lh_white_deepcsr.csv
+—-
+
+
+python examples/detect_and_plot_collisions.py /data/users2/washbee/speedrun/outputdirs/deepcsr-output_dir-timing/checkpoints/test-set/lh_pial collision_data_csv/lh_pial_deepcsr.csv
+_
+
+
+python examples/detect_and_plot_collisions.py /data/users2/llu13/output/topofit/truth/pred/lh_white collision_data_csv/lh_white_topofit.csv
+_
+
+
+python examples/detect_and_plot_collisions.py /data/users2/washbee/speedrun/PialNN_fork/ckpts/eval/lh_pial collision_data_csv/lh_pial_pialnn.csv
+
+
+python examples/detect_and_plot_collisions.py /data/users2/washbee/speedrun/Vox2Cortex_fork/experiments/hcp/test_template_42016_DATASET_NAME/meshes/lh_pial/epoch81 collision_data_csv/lh_pial_vox2cortex.csv
+
+
+python examples/detect_and_plot_collisions.py /data/users2/washbee/speedrun/Vox2Cortex_fork/experiments/hcp/test_template_42016_DATASET_NAME/meshes/lh_white/epoch81 collision_data_csv/lh_white_vox2cortex.csv
+
+
+(Python) CMD for FreeSurfer(GT)
+python3 examples/selfIntersection-rmMedialWall.py /data/users2/llu13/output/cortexode/truth/samples/converted/lh_pial/ 
