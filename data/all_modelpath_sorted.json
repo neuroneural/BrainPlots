@@ -83,7 +83,7 @@
         "lh_pial": "/data/users2/llu13/output/cortexode/truth/samples/converted/lh_pial/",
         "lh_white": "/data/users2/llu13/output/cortexode/truth/samples/converted/lh_white/"
     },
-    "freesurfer-rm-2": {
+    "freesurfer-rm": {
         "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/data/lh-pial/cortexode",
         "lh_white": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/data/lh-white/cortexode"
     },
@@ -94,8 +94,7 @@
         "lh_pial": "/data/users2/washbee/speedrun/PialNN_fork/ckpts/eval_subj_id_copy/gt"
     },
     "pialnn-gt-rm": {
-        "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/pialnn-gt-rm/pial",
-        "lh_white": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/pialnn-gt-rm/white"
+        "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/pialnn-gt-rm/pial"
     },
     "pialnn-rm": {
         "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/data/lh-pial/pialnn/predicted"
@@ -107,7 +106,6 @@
         "lh_white": "/data/users2/llu13/output/topofit/data/gt/lh_white"
     },
     "topofit-gt-rm": {
-        "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/topofit-gt-rm/pial",
         "lh_white": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/topofit-gt-rm/white"
     },
     "topofit-rm": {
