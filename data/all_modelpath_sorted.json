@@ -84,8 +84,8 @@
         "lh_white": "/data/users2/llu13/output/cortexode/truth/samples/converted/lh_white/"
     },
     "freesurfer-rm": {
-        "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/data/lh-pial/cortexode",
-        "lh_white": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/data/lh-white/cortexode"
+        "lh_pial": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/cortexode-gt-rm/pial",
+        "lh_white": "/data/users2/llu13/FStutorial/Jul5/data-for-medial-wall/rm-paths/cortexode-gt-rm/white"
     },
     "pialnn": {
         "lh_pial": "/data/users2/washbee/speedrun/PialNN_fork/ckpts/eval_subj_id_copy/predicted"
