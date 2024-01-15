@@ -2,6 +2,8 @@ import pyvista as pv
 import pickle as pkl
 import numpy as np
 from sklearn.neighbors import KDTree
+from scipy.spatial import cKDTree
+
 from vtkmodules.vtkCommonDataModel import vtkIterativeClosestPointTransform
 import os
 import numpy as np
@@ -69,10 +71,16 @@ def withinBounds(points, bounds):
     return points[passing, :], passing
 
 def cleanDebris(mesh):
-    connected_components = mesh.connectivity()
-    mesh = connected_components.extract_largest()
-    mesh.clear_data()
-    return mesh
+    # Label the connected components
+    labeled_mesh = mesh.connectivity(largest=False)
+    
+    # Extract the largest connected component
+    largest_component = labeled_mesh.threshold(0.5, scalars='RegionId')
+
+    if not isinstance(mesh, pv.PolyData):
+        largest_component = pv.PolyData(largest_component)
+    return largest_component
+
 
 def minuspatch(meshA, patch, K=1):
     pmesh = pv.PolyData(patch)
@@ -89,6 +97,36 @@ def minuspatch(meshA, patch, K=1):
     nearest = np.array([x['idx'] for x in nnidx]).flatten()
     idxs = np.where(passing == True)[0][nearest]
     return cleanDebris(meshA.remove_points(idxs)[0])
+
+def minuspatch_optimized(meshA, patch, K=1):
+    # Calculate centroids of faces in the mesh
+    faces = meshA.faces.reshape((-1, 4))[:, 1:4]
+    centroids = np.mean(meshA.points[faces], axis=1)
+
+    # Build KDTree using centroids
+    kd_tree = cKDTree(centroids)
+
+    # Find nearest neighbor faces for each point in the patch
+    face_indices = set()
+    for point in patch:
+        _, indices = kd_tree.query(point, k=K)
+        face_indices.update(indices)
+
+    # Convert set to list for indexing
+    face_indices_to_remove = list(face_indices)
+
+    # Remove the faces from the mesh in a batch
+    clean_mesh = meshA.copy()
+    clean_mesh.remove_cells(face_indices_to_remove, inplace=True)
+    return clean_mesh
+
+#    return cleanDebris(clean_mesh)
+
+# Usage example
+# meshA = pv.read('/path/to/mesh/file.stl')
+# patch = load_ply_points('/path/to/patch/points.ply')
+# optimized_mesh = minuspatch_optimized(meshA, patch, K=5)
+
 
 ##################3
 def _alignMeshesAndGetMatrix(target, source, rigid=True):

@@ -36,3 +36,24 @@ save_mesh(aligned_source,"CA.stl",'stl')
 # another_mesh = pv.read('path_to_another_mesh_file')
 # transformed_another_mesh = another_mesh.copy().transform(transformation_matrix)
 
+#'/home/users/washbee1/mwexperiments/201818/surf/lh.pial.medial_wall.ply'
+meshA = pv.read('/data/users2/washbee/speedrun/outputdirs/deepcsr-output_dir/checkpoints/predict_debug/201818_lh_pial.stl')  # Replace with the path to your mesh file
+
+medial_wall = pv.read('/home/users/washbee1/mwexperiments/201818/surf/lh.pial.medial_wall.ply')
+medial_wall.save("mw.ply", binary=True)
+
+transformed_medial_wall = medial_wall.copy().transform(np.linalg.inv(combined_transformation_matrix))
+transformed_medial_wall.save("invmw.ply", binary=True)
+
+# Recalculate the normals
+# transformed_medial_wall.compute_normals(cell_normals=True, point_normals=False, inplace=True)
+
+# Save the mesh
+points = transformed_medial_wall.points
+
+print('minuspatch start')
+modified_mesh = minuspatch_optimized(meshA, points,K=20)
+modified_mesh = modified_mesh.compute_normals(cell_normals=True, point_normals=False, inplace=True)
+print('minuspatch end')
+
+save_mesh(modified_mesh,"C_mwrm.stl",'stl')
