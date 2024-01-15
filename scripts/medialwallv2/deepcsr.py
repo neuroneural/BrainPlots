@@ -52,8 +52,12 @@ transformed_medial_wall.save("invmw.ply", binary=True)
 points = transformed_medial_wall.points
 
 print('minuspatch start')
-modified_mesh = minuspatch_optimized(meshA, points,K=20)
-modified_mesh = modified_mesh.compute_normals(cell_normals=True, point_normals=False, inplace=True)
+modified_mesh = minuspatch_optimized(meshA, points,K=50)
+if isinstance(modified_mesh, pv.UnstructuredGrid):
+    modified_mesh = modified_mesh.extract_surface()
+
+modified_mesh.compute_normals(cell_normals=True, point_normals=False, inplace=True)
+
 print('minuspatch end')
 
 save_mesh(modified_mesh,"C_mwrm.stl",'stl')

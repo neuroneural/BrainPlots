@@ -73,13 +73,20 @@ def withinBounds(points, bounds):
 def cleanDebris(mesh):
     # Label the connected components
     labeled_mesh = mesh.connectivity(largest=False)
-    
-    # Extract the largest connected component
-    largest_component = labeled_mesh.threshold(0.5, scalars='RegionId')
 
-    if not isinstance(mesh, pv.PolyData):
+    # Check if 'RegionId' scalar is available; if not, label the components
+    if 'RegionId' not in labeled_mesh.point_data:
+        labeled_mesh = labeled_mesh.cell_data_to_point_data()
+
+    # Extract the largest connected component
+    largest_component = labeled_mesh.connectivity(largest=True)
+
+    # Ensure the result is a PolyData object
+    if not isinstance(largest_component, pv.PolyData):
         largest_component = pv.PolyData(largest_component)
+
     return largest_component
+
 
 
 def minuspatch(meshA, patch, K=1):
@@ -118,9 +125,11 @@ def minuspatch_optimized(meshA, patch, K=1):
     # Remove the faces from the mesh in a batch
     clean_mesh = meshA.copy()
     clean_mesh.remove_cells(face_indices_to_remove, inplace=True)
-    return clean_mesh
+    #return clean_mesh
+    if isinstance(clean_mesh, pv.UnstructuredGrid):
+        clean_mesh = clean_mesh.cast_to_polydata()
 
-#    return cleanDebris(clean_mesh)
+    return cleanDebris(clean_mesh)
 
 # Usage example
 # meshA = pv.read('/path/to/mesh/file.stl')
