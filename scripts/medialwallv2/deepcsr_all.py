@@ -6,7 +6,7 @@ import argparse
 from remove_medial_wall import *  # Assuming this has necessary functions like createMedialWallPly
 import remove_medial_wall
 from medial_wall_util import *
-
+import pickle
 
 # Setting up argparse to handle command line arguments
 parser = argparse.ArgumentParser(description="Mesh processing script")
@@ -46,6 +46,7 @@ if not os.path.exists(fs_gt_path):
     subprocess.run(bash_command, shell=True)
 
 
+
 source_mesh = pv.read(proj_gt_path)#project's transformed ground truth
 save_mesh(source_mesh,f"{project}_{subject_id}_B_{hemi}_{surfType}.stl",'stl')
 
@@ -64,13 +65,19 @@ save_mesh(aligned_source,f"{project}_{subject_id}_BA_{hemi}_{surfType}.stl",'stl
 
 combined_transformation_matrix = icp_matrix @ scaling_matrix @ centering_matrix #correct order? 
 
+# Save the combined transformation matrix as a pickle file
+matrix_filename = f"{project}_{subject_id}_{hemi}_{surfType}_transformation_matrix.pkl"
+with open(matrix_filename, 'wb') as matrix_file:
+    pickle.dump(combined_transformation_matrix, matrix_file)
+
+
 pred_path = os.path.join(project_pred_base_path,
                         f'{subject_id}_{hemi}_{surfType}.stl')
 third_mesh = pv.read(pred_path)
 save_mesh(third_mesh,f"{project}_{subject_id}_C_{hemi}_{surfType}.stl",'stl')
 
 transformed_third_mesh = third_mesh.copy().transform(combined_transformation_matrix)
-save_mesh(aligned_source,f"{project}_{subject_id}_CA_{hemi}_{surfType}.stl",'stl')
+save_mesh(transformed_third_mesh,f"{project}_{subject_id}_CA_{hemi}_{surfType}.stl",'stl')
 
 meshA = pv.read(pred_path)  # Replace with the path to your mesh file
 
