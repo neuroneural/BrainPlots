@@ -8,6 +8,7 @@ import remove_medial_wall
 from medial_wall_util import *
 import pickle
 
+
 # Setting up argparse to handle command line arguments
 parser = argparse.ArgumentParser(description="Mesh processing script")
 parser.add_argument("--subjects_dir", required=True, help="Directory containing subject folders")
