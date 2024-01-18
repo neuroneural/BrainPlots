@@ -3,6 +3,7 @@
 #SBATCH -c 4
 #SBATCH --mem=10g
 #SBATCH -p qTRDGPU
+#SBATCH --gres=gpu:RTX:1
 #SBATCH -t 1-00:00
 #SBATCH -J mwrmdcsr
 #SBATCH -e jobs/error%A_%a.err

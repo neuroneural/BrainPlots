@@ -10,6 +10,18 @@ import pyvista as pv
 from scipy.spatial import cKDTree
 from scipy.spatial import KDTree
 
+import os
+import torch
+import numpy as np
+import trimesh
+import pyvista as pv
+from scipy.spatial import cKDTree
+import csv
+import argparse
+from mesh_intersection.bvh_search_tree import BVH #from torch_mesh_isect
+
+
+
 def color_mesh_by_distance(mesh, tree_other):
     """Attach distances as a scalar field to each vertex of the mesh."""
     distances, _ = tree_other.query(mesh.points)
@@ -26,25 +38,15 @@ def load_mesh(file_path):
     return trimesh.load(file_path)
 
 
-def count_self_intersections(mesh):
-    """
-    Count the number of self-intersections in a mesh using PyVista.
-    """
-    # Attempt to find self-intersections
-    intersection, _, _ = mesh.intersection(mesh)
-
-    # Get the cell IDs involved in the intersections
-    input0_cell_ids = intersection['Input0CellID']
-    input1_cell_ids = intersection['Input1CellID']
-
-    # Combine and find unique intersecting cell IDs
-    # This approach assumes that each unique ID represents a distinct part of an intersection
-    unique_intersecting_ids = set(input0_cell_ids).union(set(input1_cell_ids))
-
-    # Count the number of unique intersections
-    num_intersections = len(unique_intersecting_ids)
-
-    return num_intersections
+def calculate_self_intersections(file_path, max_collisions=8, device='cuda'):
+    input_mesh = trimesh.load(file_path)
+    vertices = torch.tensor(input_mesh.vertices, dtype=torch.float32, device=device)
+    faces = torch.tensor(input_mesh.faces.astype(np.int64), dtype=torch.long, device=device)
+    triangles = vertices[faces].unsqueeze(dim=0)
+    bvh_tree = BVH(max_collisions=max_collisions)
+    outputs = bvh_tree(triangles).detach().cpu().numpy().squeeze()
+    collisions = outputs[outputs[:, 0] >= 0, :]
+    return collisions.shape[0]
 
 
 def read_stl(file_path,returnMesh=False):
@@ -83,7 +85,14 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
             
             # Load the C_mwrm mesh and check for self-intersections
             mesh_c_mwrm = pv.read(file_c_mwrm)
-            # self_intersect_c_mwrm = count_self_intersections(mesh_c_mwrm)
+            if mesh_c_mwrm.is_all_triangles():
+                faces = mesh_c_mwrm.faces.reshape((-1, 4))[:, 1:4]
+                num_triangles = len(faces)
+                self_intersect_c_mwrm = calculate_self_intersections(file_c_mwrm)
+            else:
+                # Handle non-triangular meshes or error out
+                num_triangles = -1
+                self_intersect_c_mwrm = -1  # Or appropriate error handling
 
             # Read points and create cKDTree for distance calculations between BA and CA
             points_ba = read_stl(file_ba)
@@ -111,19 +120,19 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
                     csv_writer.writerow(headers)
 
                 # Write the results to the CSV file
-                # row = [project, subject_id, hemi, surface_type, hausdorff_dist, 
-                #        assd_val, chamfer_dist, self_intersect_c_mwrm, 
-                #        len(mesh_c_mwrm.triangles)]
                 row = [project, subject_id, hemi, surface_type, hausdorff_dist, 
-                       assd_val, chamfer_dist, -1, 
-                       -1]
+                       assd_val, chamfer_dist, self_intersect_c_mwrm, 
+                       num_triangles]
+                # row = [project, subject_id, hemi, surface_type, hausdorff_dist, 
+                #        assd_val, chamfer_dist, -1, 
+                #        -1]
                 csv_writer.writerow(row)
             
             ca_mesh = read_stl(file_ca,returnMesh=True)
             
             # Color the CA mesh based on distance to BA
             colored_ca_mesh = color_mesh_by_distance(ca_mesh, tree_ba)
-            print(colored_ca_mesh.point_data['Distance'])
+            # print(colored_ca_mesh.point_data['Distance'])
             
             # Save the colored mesh
             colored_ca_mesh_path = f"{project}_{subject_id}_CA_{hemi}_{surface_type}_distanceMesh.vtk"
