@@ -115,17 +115,6 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
             if mesh_c_mwrm.is_all_triangles():
                 num_triangles_c_mwrm = mesh_c_mwrm.n_faces
                 self_intersect_c_mwrm = calculate_self_intersections(file_c_mwrm)
-
-            # Count triangles in BA and CA meshes
-            num_triangles_ba = mesh_ba.n_faces if mesh_ba.is_all_triangles() else -1
-            num_triangles_ca = mesh_ca.n_faces if mesh_ca.is_all_triangles() else -1
-
-            # Calculate intersections between BA and CA
-            intersect_ba_ca = calculate_intersections(file_ba, file_ca)
-            total_intersections = calculate_intersections(file_ba, file_ca)
-            self_intersections_mesh1 = calculate_self_intersections(file_ba)
-            self_intersections_mesh2 = calculate_self_intersections(file_ca)
-            intersections_between_meshes = total_intersections - (self_intersections_mesh1 + self_intersections_mesh2)
             
             # Read points and create cKDTree for distance calculations between BA and CA
             points_ba = read_stl(file_ba)
@@ -142,6 +131,12 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
             print(f"Hausdorff Distance ({hemi}, {surface_type}): {hausdorff_dist}")
             print(f"ASSD ({hemi}, {surface_type}): {assd_val}")
             print(f"Chamfer Distance ({hemi}, {surface_type}): {chamfer_dist}")
+            
+            # Color the CA mesh based on distance to BA
+            colored_ca_mesh = color_mesh_by_distance(mesh_ca, tree_ba)
+            colored_ca_mesh_path = f"{project}_{subject_id}_CA_{hemi}_{surface_type}_distanceMesh.vtk"
+            colored_ca_mesh.save(colored_ca_mesh_path)
+            
             with open(csv_file, 'a', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
 
@@ -149,22 +144,56 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
                 if csvfile.tell() == 0:
                     headers = ["Project", "Subject ID", "Hemisphere", "Surface Type", 
                             "Hausdorff Distance", "ASSD", "Chamfer Distance", 
-                            "Self-Intersection C_mwrm", "Total Triangles C_mwrm", 
-                            "Intersections BA-CA", "Total Triangles BA", "Total Triangles CA"]
+                            "Self-Intersection C_mwrm", "Total Triangles C_mwrm", "Colored CA VTK Path"]
                     csv_writer.writerow(headers)
 
                 # Write the results to the CSV file
                 row = [project, subject_id, hemi, surface_type, hausdorff_dist, 
                     assd_val, chamfer_dist, self_intersect_c_mwrm, 
-                    num_triangles_c_mwrm, intersections_between_meshes, num_triangles_ba, num_triangles_ca]
+                    num_triangles_c_mwrm, colored_ca_mesh_path]
                 csv_writer.writerow(row)
-            
-            # Color the CA mesh based on distance to BA
-            colored_ca_mesh = color_mesh_by_distance(mesh_ca, tree_ba)
-            colored_ca_mesh_path = f"{project}_{subject_id}_CA_{hemi}_{surface_type}_distanceMesh.vtk"
-            colored_ca_mesh.save(colored_ca_mesh_path)
 
 
+
+def process_files_wpint(base_dir, subject_id, hemis, csv_file, project):
+    """Process files for calculating intersections between white and pial surfaces."""
+    for hemi in hemis:
+        # Construct file names for white and pial surfaces
+        
+        file_white = f"{base_dir}/{project}_{subject_id}_C_mwrm_{hemi}_white.stl"
+        file_pial = f"{base_dir}/{project}_{subject_id}_C_mwrm_{hemi}_pial.stl"
+                        
+        # Load the white and pial meshes
+        mesh_white = pv.read(file_white)
+        mesh_pial = pv.read(file_pial)
+
+        # Calculate total intersections and self-intersections
+        total_intersections = calculate_intersections(file_white, file_pial)
+        self_intersections_white = calculate_self_intersections(file_white)
+        self_intersections_pial = calculate_self_intersections(file_pial)
+
+        # Calculate intersections between white and pial, removing self-intersections
+        intersections_white_pial = total_intersections - (self_intersections_white + self_intersections_pial)
+
+        # Count triangles in white and pial meshes
+        num_triangles_white = mesh_white.n_faces if mesh_white.is_all_triangles() else -1
+        num_triangles_pial = mesh_pial.n_faces if mesh_pial.is_all_triangles() else -1
+
+        # Write results to CSV
+        with open(csv_file, 'a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile)
+
+            # Write headers if the file is empty/new
+            if csvfile.tell() == 0:
+                headers = ["Project", "Subject ID", "Hemisphere", 
+                           "Intersections White-Pial", "Total Triangles White", "Total Triangles Pial", "File white","File pial"]
+                csv_writer.writerow(headers)
+
+            # Write the results to the CSV file
+            row = [project, subject_id, hemi, intersections_white_pial, 
+                   num_triangles_white, num_triangles_pial,
+                   file_white ,file_pial]
+            csv_writer.writerow(row)
 
 # Command line argument parsing
 parser = argparse.ArgumentParser(description="Distance Calculation Script")
@@ -178,3 +207,10 @@ hemis = ["lh", "rh"]
 types = ["pial", "white"]
 csv_file = "distances.csv"
 process_files(args.base_dir, args.subject_id, hemis, types, csv_file, args.project)
+
+
+# White-Pial Intersection CSV file
+csv_file_intersections = "white_pial_intersections.csv"
+
+# Process files
+process_files_wpint(args.base_dir, args.subject_id, hemis, csv_file_intersections, args.project)

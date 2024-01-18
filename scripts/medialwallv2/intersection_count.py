@@ -6,7 +6,6 @@ import vtk
 import sys
 import pickle
 
-#sergey and linlin originally developed this script.
 vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_OFF)
 
 def triangles_intersect(triangle1, vertices, faces):
