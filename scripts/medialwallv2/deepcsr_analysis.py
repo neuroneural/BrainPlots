@@ -20,8 +20,6 @@ import csv
 import argparse
 from mesh_intersection.bvh_search_tree import BVH #from torch_mesh_isect
 
-
-
 def color_mesh_by_distance(mesh, tree_other):
     """Attach distances as a scalar field to each vertex of the mesh."""
     distances, _ = tree_other.query(mesh.points)
@@ -37,7 +35,6 @@ def load_mesh(file_path):
     """Load an STL file and return a trimesh object."""
     return trimesh.load(file_path)
 
-
 def calculate_self_intersections(file_path, max_collisions=8, device='cuda'):
     input_mesh = trimesh.load(file_path)
     vertices = torch.tensor(input_mesh.vertices, dtype=torch.float32, device=device)
@@ -47,6 +44,31 @@ def calculate_self_intersections(file_path, max_collisions=8, device='cuda'):
     outputs = bvh_tree(triangles).detach().cpu().numpy().squeeze()
     collisions = outputs[outputs[:, 0] >= 0, :]
     return collisions.shape[0]
+
+
+def calculate_intersections(file_path1, file_path2, max_collisions=8, device='cuda'):
+    # Load the first mesh
+    mesh1 = trimesh.load(file_path1)
+    vertices1 = torch.tensor(mesh1.vertices, dtype=torch.float32, device=device)
+    faces1 = torch.tensor(mesh1.faces.astype(np.int64), dtype=torch.long, device=device)
+    triangles1 = vertices1[faces1].unsqueeze(dim=0)
+
+    # Load the second mesh
+    mesh2 = trimesh.load(file_path2)
+    vertices2 = torch.tensor(mesh2.vertices, dtype=torch.float32, device=device)
+    faces2 = torch.tensor(mesh2.faces.astype(np.int64), dtype=torch.long, device=device)
+    triangles2 = vertices2[faces2].unsqueeze(dim=0)
+
+    # Initialize the BVH tree
+    bvh_tree = BVH(max_collisions=max_collisions)
+
+    # Check for collisions between the two meshes
+    combined_triangles = torch.cat((triangles1, triangles2), dim=1)
+    # print('shape triangles1, triangles2',triangles1.shape,triangles2.shape)
+    outputs = bvh_tree(combined_triangles).detach().cpu().numpy().squeeze()
+    collisions = outputs[outputs[:, 0] >= 0, :]
+    return collisions.shape[0]
+
 
 
 def read_stl(file_path,returnMesh=False):
@@ -83,17 +105,28 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
             file_ca = f"{base_dir}/{project}_{subject_id}_CA_{hemi}_{surface_type}.stl"
             file_c_mwrm = f"{base_dir}/{project}_{subject_id}_C_mwrm_{hemi}_{surface_type}.stl"
             
-            # Load the C_mwrm mesh and check for self-intersections
+            # Load the meshes
+            mesh_ba = pv.read(file_ba)
+            mesh_ca = pv.read(file_ca)
             mesh_c_mwrm = pv.read(file_c_mwrm)
-            if mesh_c_mwrm.is_all_triangles():
-                faces = mesh_c_mwrm.faces.reshape((-1, 4))[:, 1:4]
-                num_triangles = len(faces)
-                self_intersect_c_mwrm = calculate_self_intersections(file_c_mwrm)
-            else:
-                # Handle non-triangular meshes or error out
-                num_triangles = -1
-                self_intersect_c_mwrm = -1  # Or appropriate error handling
 
+            # Check for self-intersections in C_mwrm mesh
+            self_intersect_c_mwrm, num_triangles_c_mwrm = -1, -1
+            if mesh_c_mwrm.is_all_triangles():
+                num_triangles_c_mwrm = mesh_c_mwrm.n_faces
+                self_intersect_c_mwrm = calculate_self_intersections(file_c_mwrm)
+
+            # Count triangles in BA and CA meshes
+            num_triangles_ba = mesh_ba.n_faces if mesh_ba.is_all_triangles() else -1
+            num_triangles_ca = mesh_ca.n_faces if mesh_ca.is_all_triangles() else -1
+
+            # Calculate intersections between BA and CA
+            intersect_ba_ca = calculate_intersections(file_ba, file_ca)
+            total_intersections = calculate_intersections(file_ba, file_ca)
+            self_intersections_mesh1 = calculate_self_intersections(file_ba)
+            self_intersections_mesh2 = calculate_self_intersections(file_ca)
+            intersections_between_meshes = total_intersections - (self_intersections_mesh1 + self_intersections_mesh2)
+            
             # Read points and create cKDTree for distance calculations between BA and CA
             points_ba = read_stl(file_ba)
             points_ca = read_stl(file_ca)
@@ -115,28 +148,22 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
                 # Write headers if the file is empty/new
                 if csvfile.tell() == 0:
                     headers = ["Project", "Subject ID", "Hemisphere", "Surface Type", 
-                               "Hausdorff Distance", "ASSD", "Chamfer Distance", 
-                               "Self-Intersection C_mwrm", "Total Triangles C_mwrm"]
+                            "Hausdorff Distance", "ASSD", "Chamfer Distance", 
+                            "Self-Intersection C_mwrm", "Total Triangles C_mwrm", 
+                            "Intersections BA-CA", "Total Triangles BA", "Total Triangles CA"]
                     csv_writer.writerow(headers)
 
                 # Write the results to the CSV file
                 row = [project, subject_id, hemi, surface_type, hausdorff_dist, 
-                       assd_val, chamfer_dist, self_intersect_c_mwrm, 
-                       num_triangles]
-                # row = [project, subject_id, hemi, surface_type, hausdorff_dist, 
-                #        assd_val, chamfer_dist, -1, 
-                #        -1]
+                    assd_val, chamfer_dist, self_intersect_c_mwrm, 
+                    num_triangles_c_mwrm, intersections_between_meshes, num_triangles_ba, num_triangles_ca]
                 csv_writer.writerow(row)
             
-            ca_mesh = read_stl(file_ca,returnMesh=True)
-            
             # Color the CA mesh based on distance to BA
-            colored_ca_mesh = color_mesh_by_distance(ca_mesh, tree_ba)
-            # print(colored_ca_mesh.point_data['Distance'])
-            
-            # Save the colored mesh
+            colored_ca_mesh = color_mesh_by_distance(mesh_ca, tree_ba)
             colored_ca_mesh_path = f"{project}_{subject_id}_CA_{hemi}_{surface_type}_distanceMesh.vtk"
             colored_ca_mesh.save(colored_ca_mesh_path)
+
 
 
 # Command line argument parsing
