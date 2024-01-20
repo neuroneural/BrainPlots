@@ -121,7 +121,7 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
 
                 # Write headers if the file is empty/new
                 if csvfile.tell() == 0:
-                    headers = ["Project", "Subject ID", "Hemisphere", "Surface Type", 
+                    headers = ["Project", "subject_id", "Hemisphere", "Surface Type", 
                             "Hausdorff Distance", "ASSD", "Chamfer Distance", 
                             "Self-Intersection C_mwrm", "Total Triangles C_mwrm", "Colored CA VTK Path"]
                     csv_writer.writerow(headers)
@@ -171,7 +171,7 @@ def process_files_wpint(base_dir, subject_id, hemis, csv_file, project):
 
             # Write headers if the file is empty/new
             if csvfile.tell() == 0:
-                headers = ["Project", "Subject ID", "Hemisphere", 
+                headers = ["Project", "subject_id", "Hemisphere", 
                            "Intersections White-Pial", "Total Triangles White", "Total Triangles Pial", "File white","File pial"]
                 csv_writer.writerow(headers)
 
