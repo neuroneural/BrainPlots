@@ -18,7 +18,8 @@ import pyvista as pv
 from scipy.spatial import cKDTree
 import csv
 import argparse
-from mesh_intersection.bvh_search_tree import BVH #from torch_mesh_isect
+# from mesh_intersection.bvh_search_tree import BVH #from torch_mesh_isect
+from intersection_count import *
 
 def color_mesh_by_distance(mesh, tree_other):
     """Attach distances as a scalar field to each vertex of the mesh."""
@@ -35,41 +36,15 @@ def load_mesh(file_path):
     """Load an STL file and return a trimesh object."""
     return trimesh.load(file_path)
 
-def calculate_self_intersections(file_path, max_collisions=8, device='cuda'):
-    input_mesh = trimesh.load(file_path)
-    vertices = torch.tensor(input_mesh.vertices, dtype=torch.float32, device=device)
-    faces = torch.tensor(input_mesh.faces.astype(np.int64), dtype=torch.long, device=device)
-    triangles = vertices[faces].unsqueeze(dim=0)
-    bvh_tree = BVH(max_collisions=max_collisions)
-    outputs = bvh_tree(triangles).detach().cpu().numpy().squeeze()
-    collisions = outputs[outputs[:, 0] >= 0, :]
-    return collisions.shape[0]
+def calculate_self_intersections(mesh):
+    """Calculate the number of self-intersections in a mesh."""
+    collision_count, _, _ = count_self_collisions(mesh, k=30)
+    return collision_count
 
-
-def calculate_intersections(file_path1, file_path2, max_collisions=8, device='cuda'):
-    # Load the first mesh
-    mesh1 = trimesh.load(file_path1)
-    vertices1 = torch.tensor(mesh1.vertices, dtype=torch.float32, device=device)
-    faces1 = torch.tensor(mesh1.faces.astype(np.int64), dtype=torch.long, device=device)
-    triangles1 = vertices1[faces1].unsqueeze(dim=0)
-
-    # Load the second mesh
-    mesh2 = trimesh.load(file_path2)
-    vertices2 = torch.tensor(mesh2.vertices, dtype=torch.float32, device=device)
-    faces2 = torch.tensor(mesh2.faces.astype(np.int64), dtype=torch.long, device=device)
-    triangles2 = vertices2[faces2].unsqueeze(dim=0)
-
-    # Initialize the BVH tree
-    bvh_tree = BVH(max_collisions=max_collisions)
-
-    # Check for collisions between the two meshes
-    combined_triangles = torch.cat((triangles1, triangles2), dim=1)
-    # print('shape triangles1, triangles2',triangles1.shape,triangles2.shape)
-    outputs = bvh_tree(combined_triangles).detach().cpu().numpy().squeeze()
-    collisions = outputs[outputs[:, 0] >= 0, :]
-    return collisions.shape[0]
-
-
+def calculate_intersections(mesh1, mesh2):
+    """Calculate the number of intersections between two meshes."""
+    collision_count, _, _ = count_collisions(mesh1, mesh2, k=30)
+    return collision_count
 
 def read_stl(file_path,returnMesh=False):
     """Read an STL file and return points."""
@@ -78,6 +53,7 @@ def read_stl(file_path,returnMesh=False):
         return mesh.points
     else:
         return mesh
+
 def hausdorff_distance(tree1, tree2):
     """Calculate the Hausdorff distance between two trees."""
     d1, _ = tree1.query(tree2.data)
@@ -108,14 +84,17 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
             # Load the meshes
             mesh_ba = pv.read(file_ba)
             mesh_ca = pv.read(file_ca)
-            mesh_c_mwrm = pv.read(file_c_mwrm)
-
+            mesh_c_mwrm = trimesh.load(file_c_mwrm)#pv.read(file_c_mwrm)
+            
             # Check for self-intersections in C_mwrm mesh
             self_intersect_c_mwrm, num_triangles_c_mwrm = -1, -1
-            if mesh_c_mwrm.is_all_triangles():
-                num_triangles_c_mwrm = mesh_c_mwrm.n_faces
-                self_intersect_c_mwrm = calculate_self_intersections(file_c_mwrm)
-            
+            # if mesh_c_mwrm.is_all_triangles():
+                # num_triangles_c_mwrm = mesh_c_mwrm.n_faces
+                # self_intersect_c_mwrm = calculate_self_intersections(file_c_mwrm)
+
+            num_triangles_c_mwrm = mesh_c_mwrm.faces.shape[0]
+            self_intersect_c_mwrm = calculate_self_intersections(mesh_c_mwrm)
+        
             # Read points and create cKDTree for distance calculations between BA and CA
             points_ba = read_stl(file_ba)
             points_ca = read_stl(file_ca)
@@ -164,21 +143,28 @@ def process_files_wpint(base_dir, subject_id, hemis, csv_file, project):
         file_pial = f"{base_dir}/{project}_{subject_id}_C_mwrm_{hemi}_pial.stl"
                         
         # Load the white and pial meshes
-        mesh_white = pv.read(file_white)
-        mesh_pial = pv.read(file_pial)
+        # mesh_white = pv.read(file_white)
+        # mesh_pial = pv.read(file_pial)
 
-        # Calculate total intersections and self-intersections
-        total_intersections = calculate_intersections(file_white, file_pial)
-        self_intersections_white = calculate_self_intersections(file_white)
-        self_intersections_pial = calculate_self_intersections(file_pial)
+        mesh_white = trimesh.load(file_white)
+        mesh_pial = trimesh.load(file_pial)
+
+        
+        # # Calculate total intersections and self-intersections
+        # total_intersections = calculate_intersections(file_white, file_pial)
+        # self_intersections_white = calculate_self_intersections(file_white)
+        # self_intersections_pial = calculate_self_intersections(file_pial)
 
         # Calculate intersections between white and pial, removing self-intersections
-        intersections_white_pial = total_intersections - (self_intersections_white + self_intersections_pial)
-
+        #intersections_white_pial = total_intersections - (self_intersections_white + self_intersections_pial)
+        intersections_white_pial = calculate_intersections(mesh_white, mesh_pial)
         # Count triangles in white and pial meshes
-        num_triangles_white = mesh_white.n_faces if mesh_white.is_all_triangles() else -1
-        num_triangles_pial = mesh_pial.n_faces if mesh_pial.is_all_triangles() else -1
-
+        # num_triangles_white = mesh_white.n_faces if mesh_white.is_all_triangles() else -1
+        # num_triangles_pial = mesh_pial.n_faces if mesh_pial.is_all_triangles() else -1
+        
+        num_triangles_white = mesh_white.faces.shape[0]
+        num_triangles_pial = mesh_pial.faces.shape[0]
+        
         # Write results to CSV
         with open(csv_file, 'a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
@@ -205,6 +191,7 @@ args = parser.parse_args()
 # Process files
 hemis = ["lh", "rh"]
 types = ["pial", "white"]
+
 csv_file = "distances.csv"
 process_files(args.base_dir, args.subject_id, hemis, types, csv_file, args.project)
 

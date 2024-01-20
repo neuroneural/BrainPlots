@@ -1,9 +1,8 @@
 #!/bin/bash
 #SBATCH -n 1
-#SBATCH -c 4
-#SBATCH --mem=10g
+#SBATCH -c 2
+#SBATCH --mem=5g
 #SBATCH -p qTRDGPU
-#SBATCH --gres=gpu:RTX:1
 #SBATCH -t 1-00:00
 #SBATCH -J mwrmdcsr
 #SBATCH -e jobs/error%A_%a.err
