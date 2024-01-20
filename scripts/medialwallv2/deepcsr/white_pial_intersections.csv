@@ -1,4 +1,4 @@
-Project,Subject ID,Hemisphere,Intersections White-Pial,Total Triangles White,Total Triangles Pial,File white,File pial
+Project,subject_id,Hemisphere,Intersections White-Pial,Total Triangles White,Total Triangles Pial,File white,File pial
 deepcsr,208428,lh,118,352580,244802,/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/deepcsr/deepcsr_208428_C_mwrm_lh_white.stl,/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/deepcsr/deepcsr_208428_C_mwrm_lh_pial.stl
 deepcsr,204521,lh,0,352754,298882,/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/deepcsr/deepcsr_204521_C_mwrm_lh_white.stl,/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/deepcsr/deepcsr_204521_C_mwrm_lh_pial.stl
 deepcsr,209834,lh,497,392290,257657,/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/deepcsr/deepcsr_209834_C_mwrm_lh_white.stl,/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/deepcsr/deepcsr_209834_C_mwrm_lh_pial.stl
