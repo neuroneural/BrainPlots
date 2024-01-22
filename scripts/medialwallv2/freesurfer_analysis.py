@@ -86,14 +86,14 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
             self_intersect_a_mwrm, num_triangles_a_mwrm = -1, -1 #rename _a_mwrm
 
             num_triangles_a_mwrm = mesh_a_mwrm.faces.shape[0] #rename _a_mwrm
-            self_intersect_a_mwrm = calculate_self_intersections(mesh_c_mwrm) #rename _a_mwrm
+            self_intersect_a_mwrm = calculate_self_intersections(mesh_a_mwrm) #rename _a_mwrm
             
             with open(csv_file, 'a', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
 
                 # Write headers if the file is empty/new
                 if csvfile.tell() == 0:
-                    headers = ["Project", "subject_id", "Hemisphere", "Surface Type", 
+                    headers = ["Project", "subject_id", "Hemisphere", "Surface Type",
                             "Hausdorff Distance", "ASSD", "Chamfer Distance", 
                             "Self-Intersection A_mwrm", "Total Triangles A_mwrm", "Colored CA VTK Path"]
                     csv_writer.writerow(headers)
@@ -105,7 +105,7 @@ def process_files(base_dir, subject_id, hemis, types, csv_file, project):
                 colored_ca_mesh_path = "NA"
                 row = [project, subject_id, hemi, surface_type,
                        hausdorff_dist, assd_val, chamfer_dist, # not required for freesurfer
-                       self_intersect_a_mwrm, num_triangles_a_mwrm, 
+                       self_intersect_a_mwrm, num_triangles_a_mwrm,
                        colored_ca_mesh_path # not required for freesurfer
                        ]
                 csv_writer.writerow(row)
@@ -114,9 +114,8 @@ def process_files_wpint(base_dir, subject_id, hemis, csv_file, project):
     """Process files for calculating intersections between white and pial surfaces."""
     for hemi in hemis:
         # Construct file names for white and pial surfaces
-        
-        file_white = f"{base_dir}/{project}_{subject_id}_a_mwrm_{hemi}_white.stl"
-        file_pial = f"{base_dir}/{project}_{subject_id}_a_mwrm_{hemi}_pial.stl"
+        file_white = f"{base_dir}/{project}_{subject_id}_A_mwrm_{hemi}_white.stl"
+        file_pial = f"{base_dir}/{project}_{subject_id}_A_mwrm_{hemi}_pial.stl"
         
         mesh_white = trimesh.load(file_white)
         mesh_pial = trimesh.load(file_pial)

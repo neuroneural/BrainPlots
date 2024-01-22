@@ -1,0 +1,6 @@
+Project,subject_id,Hemisphere,Intersections White-Pial,Total Triangles White,Total Triangles Pial,File white,File pial
+freesurfer,239944,rh,300,257497,258254,./freesurfer_239944_A_mwrm_rh_white.stl,./freesurfer_239944_A_mwrm_rh_pial.stl
+freesurfer,283543,lh,128,261353,262645,./freesurfer_283543_A_mwrm_lh_white.stl,./freesurfer_283543_A_mwrm_lh_pial.stl
+freesurfer,212823,lh,114,268002,267381,./freesurfer_212823_A_mwrm_lh_white.stl,./freesurfer_212823_A_mwrm_lh_pial.stl
+freesurfer,202113,lh,101,270821,272064,./freesurfer_202113_A_mwrm_lh_white.stl,./freesurfer_202113_A_mwrm_lh_pial.stl
+freesurfer,211417,lh,99,251112,251670,./freesurfer_211417_A_mwrm_lh_white.stl,./freesurfer_211417_A_mwrm_lh_pial.stl

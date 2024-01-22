@@ -4,7 +4,7 @@
 #SBATCH --mem=5g
 #SBATCH -p qTRDGPU
 #SBATCH -t 1-00:00
-#SBATCH -J mwrmdcsr
+#SBATCH -J mwrmfsan
 #SBATCH -e jobs/error%A_%a.err
 #SBATCH -o jobs/out%A_%a.out
 #SBATCH -A psy53c17
@@ -31,5 +31,5 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
 # Execute the Python script with the required arguments
-python freesurfer_analysis.py --subject_id "$subject_id" --project "freesurfer" --base_dir $base_dir
+python ../freesurfer_analysis.py --subject_id "$subject_id" --project "freesurfer" --base_dir $base_dir
 
