@@ -88,6 +88,17 @@ save_mesh(aligned_source,f"{project}_{subject_id}_BA_{hemi}_{surfType}.stl",'stl
 
 combined_transformation_matrix = icp_matrix @ scaling_matrix @ centering_matrix @ rot #correct order? 
 
+############# unit test for transformation matrix being equivalent to the steps to obtain it
+# test_mesh = source_mesh.copy().transform(combined_transformation_matrix)
+# t_p = cKDTree(test_mesh.points)
+# t_a = cKDTree(aligned_source.points)
+# d1, _ = t_a.query(t_p.data)
+# d2, _ = t_p.query(t_a.data)
+# hd = max(np.max(d1), np.max(d2))
+# print('hd',hd)
+# assert hd < .0001
+#############
+
 # Save the combined transformation matrix as a pickle file
 matrix_filename = f"{project}_{subject_id}_{hemi}_{surfType}_transformation_matrix.pkl"
 with open(matrix_filename, 'wb') as matrix_file:
