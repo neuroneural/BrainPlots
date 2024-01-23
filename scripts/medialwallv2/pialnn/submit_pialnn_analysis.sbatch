@@ -4,7 +4,7 @@
 #SBATCH --mem=5g
 #SBATCH -p qTRDGPU
 #SBATCH -t 1-00:00
-#SBATCH -J rpsanlv2c
+#SBATCH -J rpsanlpi
 #SBATCH -e jobs/error%A_%a.err
 #SBATCH -o jobs/out%A_%a.out
 #SBATCH -A psy53c17
@@ -19,7 +19,7 @@ conda_env_path="/data/users2/washbee/anaconda3/envs/mwrm"
 source /data/users2/washbee/anaconda3/etc/profile.d/conda.sh
 conda activate "$conda_env_path"
 
-base_dir="/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/vox2cortex"
+base_dir="/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/pialnn"
 # Read test_subject_ids.txt into an array
 subjects_dir="/data/users2/washbee/speedrun/topofit-data"
 mapfile -t subject_ids < "${subjects_dir}/"test_subject_ids.txt
@@ -31,5 +31,5 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
 # Execute the Python script with the required arguments
-python ../rp_surface_analysis.py --subject_id "$subject_id" --project "vox2cortex" --base_dir $base_dir
+python ../rp_surface_analysis.py --subject_id "$subject_id" --project "pialnn" --base_dir $base_dir
 

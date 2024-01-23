@@ -191,8 +191,15 @@ args = parser.parse_args()
 # Process files
 hemis = ["lh", "rh"]
 types = ["pial", "white"]
-
+print(args.project)
+print(type(args.project))
+print(args.project == 'pialnn')
+if args.project == 'pialnn':
+    print('reduce types to pial due to pialnn')
+    types = ["pial"]
+print('types',types)
 csv_file = "distances.csv"
+
 process_files(args.base_dir, args.subject_id, hemis, types, csv_file, args.project)
 
 
@@ -200,4 +207,5 @@ process_files(args.base_dir, args.subject_id, hemis, types, csv_file, args.proje
 csv_file_intersections = "white_pial_intersections.csv"
 
 # Process files
-process_files_wpint(args.base_dir, args.subject_id, hemis, csv_file_intersections, args.project)
+if args.project != 'pialnn':
+    process_files_wpint(args.base_dir, args.subject_id, hemis, csv_file_intersections, args.project)
