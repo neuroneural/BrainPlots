@@ -4,7 +4,7 @@
 #SBATCH --mem=5g
 #SBATCH -p qTRDGPU
 #SBATCH -t 1-00:00
-#SBATCH -J mwrmv2clw
+#SBATCH -J mwrmpiclp
 #SBATCH -e jobs/error%A_%a.err
 #SBATCH -o jobs/out%A_%a.out
 #SBATCH -A psy53c17
@@ -31,5 +31,4 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
 # Execute the Python script with the required arguments
-python ../vox2cortex_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "lh" --surfType "white" --project "vox2cortex" --project_gt_base_path "/data/users2/washbee/speedrun/Vox2Cortex_fork/CSR_data" --project_pred_base_path "/data/users2/washbee/speedrun/Vox2Cortex_fork/experiments/hcp/test_template_42016_DATASET_NAME/meshes"
-
+python ../pialnn_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "lh" --surfType "pial" --project "pialnn" --project_gt_base_path "/data/users2/washbee/speedrun/PialNN_fork/ckpts/mesh" --project_pred_base_path "/data/users2/washbee/speedrun/PialNN_fork/ckpts/mesh"
