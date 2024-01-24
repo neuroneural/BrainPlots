@@ -35,7 +35,7 @@ proj_gt_path = os.path.join(project_gt_base_path, subject_id, f'{hemi}_{surfType
 fs_gt_path = os.path.join(subjects_dir,subject_id,'surf',f'{hemi}.{surfType}.stl')
 file_path_fs = os.path.join(subjects_dir,subject_id,'surf',f'{hemi}.{surfType}')
 
-bash_command = f"mris_conxvert {file_path_fs} {fs_gt_path}"
+bash_command = f"mris_convert {file_path_fs} {fs_gt_path}"
 
 print('subject_id',subject_id)
 

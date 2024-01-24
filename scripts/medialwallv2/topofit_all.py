@@ -8,27 +8,6 @@ import remove_medial_wall
 from medial_wall_util import *
 import pickle
 
-def rotation_matrix_x(angle_rad):
-    identity_matrix = np.identity(4)
-    identity_matrix[0:3,0:3] = np.array([[1, 0, 0],
-                     [0, np.cos(angle_rad), -np.sin(angle_rad)],
-                     [0, np.sin(angle_rad), np.cos(angle_rad)]])
-    return identity_matrix
-
-def rotation_matrix_y(angle_rad):
-    identity_matrix = np.identity(4)
-    identity_matrix[0:3,0:3] = np.array([[np.cos(angle_rad), 0, np.sin(angle_rad)],
-                     [0, 1, 0],
-                     [-np.sin(angle_rad), 0, np.cos(angle_rad)]])
-    return identity_matrix
-
-def rotation_matrix_z(angle_rad):
-    identity_matrix = np.identity(4)
-    identity_matrix[0:3,0:3] = np.array([[np.cos(angle_rad), -np.sin(angle_rad), 0],
-                     [np.sin(angle_rad), np.cos(angle_rad), 0],
-                     [0, 0, 1]])
-    return identity_matrix
-
 # Setting up argparse to handle command line arguments
 parser = argparse.ArgumentParser(description="Mesh processing script")
 parser.add_argument("--subjects_dir", required=True, help="Directory containing subject folders")
@@ -51,7 +30,7 @@ project = args.project
 project_gt_base_path = args.project_gt_base_path
 project_pred_base_path = args.project_pred_base_path
 
-proj_gt_path = os.path.join(project_gt_base_path, f'pialnn_{hemi}_{subject_id}_gt.stl')
+# proj_gt_path = os.path.join(project_gt_base_path,subject_id, f'{hemi}_{surfType}.stl')#todo
 fs_gt_path = os.path.join(subjects_dir,subject_id,'surf',f'{hemi}.{surfType}.stl')
 file_path_fs = os.path.join(subjects_dir,subject_id,'surf',f'{hemi}.{surfType}')
 
@@ -66,27 +45,18 @@ if not os.path.exists(fs_gt_path):
     # File does not exist, execute the bash command
     subprocess.run(bash_command, shell=True)
 
-source_mesh = pv.read(proj_gt_path)#project's transformed ground truth
-save_mesh(source_mesh,f"{project}_{subject_id}_B_{hemi}_{surfType}.stl",'stl')
+# source_mesh = pv.read(proj_gt_path)#project's transformed ground truth
+# save_mesh(source_mesh,f"{project}_{subject_id}_B_{hemi}_{surfType}.stl",'stl')
 
 target_mesh = pv.read(fs_gt_path)#Freesurfer
 save_mesh(target_mesh,f"{project}_{subject_id}_A_{hemi}_{surfType}.stl",'stl')
+save_mesh(target_mesh,f"{project}_{subject_id}_BA_{hemi}_{surfType}.stl",'stl') # topofit only
 
-rot = rotation_matrix_x(np.pi / -2.0)
-source_mesh_rot = source_mesh.copy().transform(rot)
-save_mesh(source_mesh_rot,f"{project}_{subject_id}_B_rotmx_{hemi}_{surfType}.stl",'stl')
-
-centered_source, centering_matrix = alignCentersAndGetMatrix(target_mesh, source_mesh_rot)
-
-scaled_source, scaling_matrix = scaleToMatchBoundingBox(centered_source, target_mesh)
-
-aligned_source, icp_matrix = remove_medial_wall._alignMeshesAndGetMatrix(target_mesh, scaled_source, rigid=False)#maybe needs to be True
-
-print('aligned source type',type(aligned_source))
-
+source_mesh = target_mesh  # topofit only
+aligned_source = target_mesh # topofit only
 save_mesh(aligned_source,f"{project}_{subject_id}_BA_{hemi}_{surfType}.stl",'stl') 
 
-combined_transformation_matrix = icp_matrix @ scaling_matrix @ centering_matrix @ rot #correct order? 
+combined_transformation_matrix = np.eye(4) # topofit only
 
 ############# unit test for transformation matrix being equivalent to the steps to obtain it
 # test_mesh = source_mesh.copy().transform(combined_transformation_matrix)
@@ -104,9 +74,22 @@ matrix_filename = f"{project}_{subject_id}_{hemi}_{surfType}_transformation_matr
 with open(matrix_filename, 'wb') as matrix_file:
     pickle.dump(combined_transformation_matrix, matrix_file)
 
-pred_path = os.path.join(project_pred_base_path,
-    f'pialnn_{hemi}_{subject_id}.stl')
+pred_path = os.path.join(project_pred_base_path,subject_id,'surf',
+    f'{hemi}.{surfType}.topofit.stl')
+pred_path_fs = os.path.join(project_pred_base_path,subject_id,'surf',
+    f'{hemi}.{surfType}.topofit')
 
+bash_command = f"mris_convert {pred_path_fs} {pred_path}"
+
+print('bash_command',bash_command)
+
+# Check if the file exists
+if not os.path.exists(pred_path):
+    print('executing bash command')
+    # File does not exist, execute the bash command
+    subprocess.run(bash_command, shell=True)
+else:
+    print('pred_path exists')
 third_mesh = pv.read(pred_path)
 save_mesh(third_mesh,f"{project}_{subject_id}_C_{hemi}_{surfType}.stl",'stl')
 
@@ -124,8 +107,8 @@ if not os.path.exists(mw_file_path):
 medial_wall = pv.read(mw_file_path)
 medial_wall.save(f"{project}_{subject_id}_mw_{hemi}_{surfType}.ply", binary=True)
 
-transformed_medial_wall = medial_wall.copy().transform(np.linalg.inv(combined_transformation_matrix))
-transformed_medial_wall.save(f"{project}_{subject_id}_invmw_{hemi}_{surfType}.ply", binary=True)
+transformed_medial_wall = medial_wall.copy()#.transform(np.eye(4)) # topofit only
+transformed_medial_wall.save(f"{project}_{subject_id}_invmw_{hemi}_{surfType}.ply", binary=True) 
 
 # Save the mesh
 points = transformed_medial_wall.points
