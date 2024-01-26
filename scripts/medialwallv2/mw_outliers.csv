@@ -1,0 +1,20 @@
+project,file_path,subject_id,hemisphere,surface_type,bounding_box_volume,number of standard deviations from mean,group_mean,group_stdev,stl_file_path
+corticalflow,./corticalflow_214726_mw_lh_pial.ply,214726,lh,pial,73463.34102245848,-2.680841358050238,149360.01579682957,28310.76689654264,corticalflow_214726_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_201515_mw_lh_pial.ply,201515,lh,pial,78776.75258278345,-2.4931597039381463,149360.01579682957,28310.76689654264,corticalflow_201515_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_293748_mw_lh_pial.ply,293748,lh,pial,59123.046449651214,-3.187372835110244,149360.01579682957,28310.76689654264,corticalflow_293748_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_298455_mw_lh_pial.ply,298455,lh,pial,89134.29998752891,-2.1273078200031215,149360.01579682957,28310.76689654264,corticalflow_298455_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_211316_mw_lh_pial.ply,211316,lh,pial,63172.544560679795,-3.0443354484570726,149360.01579682957,28310.76689654264,corticalflow_211316_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_209935_mw_lh_pial.ply,209935,lh,pial,74170.49127465553,-2.6558632197051613,149360.01579682957,28310.76689654264,corticalflow_209935_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_210011_mw_lh_pial.ply,210011,lh,pial,70236.79243650367,-2.794810315434746,149360.01579682957,28310.76689654264,corticalflow_210011_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_209935_mw_lh_white.ply,209935,lh,white,77217.09277108418,-2.55068032845578,143370.00074576464,25935.3974062012,corticalflow_209935_C_mwrm_lh_white.stl
+corticalflow,./corticalflow_211316_mw_lh_white.ply,211316,lh,white,63687.752686783104,-3.0723357275385097,143370.00074576464,25935.3974062012,corticalflow_211316_C_mwrm_lh_white.stl
+corticalflow,./corticalflow_210011_mw_lh_white.ply,210011,lh,white,71473.06766052406,-2.772154671825075,143370.00074576464,25935.3974062012,corticalflow_210011_C_mwrm_lh_white.stl
+corticalflow,./corticalflow_208327_mw_rh_pial.ply,208327,rh,pial,77948.82930417106,-3.719078983706279,157119.222480024,21287.634256413407,corticalflow_208327_C_mwrm_rh_pial.stl
+corticalflow,./corticalflow_228434_mw_lh_pial.ply,228434,lh,pial,58218.53192254772,-3.2193223238121536,149360.01579682957,28310.76689654264,corticalflow_228434_C_mwrm_lh_pial.stl
+corticalflow,./corticalflow_201515_mw_lh_white.ply,201515,lh,white,80789.65351387723,-2.4129318803853894,143370.00074576464,25935.3974062012,corticalflow_201515_C_mwrm_lh_white.stl
+corticalflow,./corticalflow_250427_mw_rh_pial.ply,250427,rh,pial,57408.05152203337,-4.683994931374315,157119.222480024,21287.634256413407,corticalflow_250427_C_mwrm_rh_pial.stl
+corticalflow,./corticalflow_208327_mw_rh_white.ply,208327,rh,white,79248.45189660702,-3.5629537538245373,148334.44826694738,19390.090678606826,corticalflow_208327_C_mwrm_rh_white.stl
+corticalflow,./corticalflow_250427_mw_rh_white.ply,250427,rh,white,57113.029941694025,-4.704537995064579,148334.44826694738,19390.090678606826,corticalflow_250427_C_mwrm_rh_white.stl
+corticalflow,./corticalflow_228434_mw_lh_white.ply,228434,lh,white,59381.06368612922,-3.238390210267359,143370.00074576464,25935.3974062012,corticalflow_228434_C_mwrm_lh_white.stl
+corticalflow,./corticalflow_214726_mw_lh_white.ply,214726,lh,white,72663.44716148054,-2.7262568017322164,143370.00074576464,25935.3974062012,corticalflow_214726_C_mwrm_lh_white.stl
+corticalflow,./corticalflow_293748_mw_lh_white.ply,293748,lh,white,59491.534409081665,-3.2341307527690897,143370.00074576464,25935.3974062012,corticalflow_293748_C_mwrm_lh_white.stl

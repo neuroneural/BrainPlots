@@ -14,11 +14,11 @@ def calculate_bounding_box_volume(ply_file):
 
 # Function to create a corresponding .stl file path
 def create_stl_file_path(subject_id, hemisphere, surface_type):
-    return f"deepcsr_{subject_id}_C_mwrm_{hemisphere}_{surface_type}.stl"
+    return f"corticalflow_{subject_id}_C_mwrm_{hemisphere}_{surface_type}.stl"
 
 # Function to process each .ply file
 def process_ply_file(file):
-    subject_id, hemisphere, surface_type = re.findall(r'deepcsr_(\d+)_mw_(lh|rh)_(pial|white)', file)[0]
+    subject_id, hemisphere, surface_type = re.findall(r'corticalflow_(\d+)_mw_(lh|rh)_(pial|white)', file)[0]
     bounding_box_volume = calculate_bounding_box_volume(file)
     stl_file_path = create_stl_file_path(subject_id, hemisphere, surface_type)
 
@@ -28,7 +28,7 @@ def process_ply_file(file):
 directory_path = '.'
 
 # List all .ply files in the directory
-ply_files = [file for file in glob.glob(f"{directory_path}/deepcsr_*_mw_*_*.ply")]
+ply_files = [file for file in glob.glob(f"{directory_path}/corticalflow_*_mw_*_*.ply")]
 
 # Process each file
 data = [process_ply_file(file) for file in ply_files]
@@ -48,7 +48,7 @@ df = df.join(group_stds, on=["hemisphere", "surface_type"])
 df["number of standard deviations from mean"] = (df["bounding_box_volume"] - df["group_mean"]) / df["group_stdev"]
 
 # Prepare the final DataFrame for CSV
-df["project"] = "deepcsr"
+df["project"] = "corticalflow"
 df = df[["project", "file_path", "subject_id", "hemisphere", "surface_type", "bounding_box_volume", 
          "number of standard deviations from mean", "group_mean", "group_stdev", "stl_file_path"]]
 
