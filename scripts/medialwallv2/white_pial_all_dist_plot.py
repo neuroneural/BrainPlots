@@ -40,10 +40,11 @@ global_max = all_data['Intersections White-Pial'].max()
 
 # Create a FacetGrid for the subplots, one for each Hemisphere
 g = sns.FacetGrid(all_data, col='Hemisphere', sharex=True, sharey=True, height=subplot_height, aspect=subplot_aspect)
-g.set(ylim=(0, global_max))
+g.set(ylim=(1, global_max))  # Set lower limit to 1 for semilog scale
 
 # Plot using strip plot for 'Intersections White-Pial' with happy colors and jitter
-g.map_dataframe(sns.stripplot, x='Project', y='Intersections White-Pial', jitter=0.55, dodge=True, palette=palette)
+# Modified to use semilog scale on the y-axis
+g.map_dataframe(lambda data, color: sns.stripplot(data=data, x='Project', y='Intersections White-Pial', jitter=0.55, dodge=True, palette=palette, ax=plt.gca()).set_yscale('log'))
 
 # Adjust the layout
 g.set_xticklabels(rotation=25, ha='right')
@@ -72,5 +73,5 @@ for ax, hemisphere in zip(g.axes.flatten(), ['lh', 'rh']):
 plt.tight_layout()
 
 # Save the plot
-plt.savefig('combined_white_pial_intersections_scatter_plot.png')
+plt.savefig('combined_white_pial_intersections_scatter_plot_semilogy.png')
 plt.close()
