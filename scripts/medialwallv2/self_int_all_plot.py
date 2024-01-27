@@ -61,12 +61,17 @@ subplots = {
 # Initialize a list to store maximum values for each subplot
 max_values = []
 
+# Create a fixed palette for all projects
+fixed_palette = sns.color_palette("husl", len(project_folders))
+
+# Create a dictionary to map each project to a color
+color_map = {project: color for project, color in zip(project_folders, fixed_palette)}
+
 for i, (title, data) in enumerate(subplots.items()):
     ax = axes[i // 2, i % 2]
 
     # Filter projects that have data for this specific subplot
     relevant_projects = data['Project'].unique()
-    palette = sns.color_palette("husl", len(relevant_projects))
 
     if not data.empty:
         max_values_per_project = []
@@ -77,13 +82,15 @@ for i, (title, data) in enumerate(subplots.items()):
             if math.isfinite(project_max):
                 max_values_per_project.append(project_max)
                 ax.text(relevant_projects.tolist().index(project), project_max, f'{project_max:.2f}', 
-                        color=palette[relevant_projects.tolist().index(project)], ha='center', va='bottom')
+                        color=color_map[project], ha='center', va='bottom')
 
         if max_values_per_project:
             max_data = max(max_values_per_project)
             max_values.append(max_data)
 
-        sns.stripplot(data=data, x='Project', y='Self-Intersection C_mwrm', jitter=0.55, dodge=True, palette=palette, ax=ax)
+        # Plot using the color map
+        sns.stripplot(data=data, x='Project', y='Self-Intersection C_mwrm', jitter=0.55, dodge=True, 
+                      palette=[color_map[project] for project in relevant_projects], ax=ax)
         ax.set_title(f'{title} - Self Intersections')
         ax.set_ylabel('Self Intersections (log scale)')
         ax.set_xlabel('Project')
@@ -92,6 +99,7 @@ for i, (title, data) in enumerate(subplots.items()):
         # Set x-ticks for only relevant projects
         ax.set_xticks(np.arange(len(relevant_projects)))
         ax.set_xticklabels(relevant_projects, rotation=25, ha='right')
+
 
 # Calculate the global maximum as the maximum of all max_data values
 global_max = max(max_values)
