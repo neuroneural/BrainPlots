@@ -8,6 +8,7 @@ import math
 
 # Directories of the projects, sorted alphabetically
 project_folders = sorted([
+    'pialnn','topofit',
     'cortexode_rk4', 'deepcsr',
     'cortexode_euler', 'corticalflow', 'freesurfer',
     'vox2cortex'
@@ -62,25 +63,35 @@ max_values = []
 
 for i, (title, data) in enumerate(subplots.items()):
     ax = axes[i // 2, i % 2]
+
+    # Filter projects that have data for this specific subplot
+    relevant_projects = data['Project'].unique()
+    palette = sns.color_palette("husl", len(relevant_projects))
+
     if not data.empty:
-        max_data = data['Self-Intersection C_mwrm'].max()
-        max_values.append(max_data)
-        palette = sns.color_palette("husl", len(project_folders))
+        max_values_per_project = []
+
+        for project in relevant_projects:
+            project_data = data[data['Project'] == project]
+            project_max = project_data['Self-Intersection C_mwrm'].max()
+            if math.isfinite(project_max):
+                max_values_per_project.append(project_max)
+                ax.text(relevant_projects.tolist().index(project), project_max, f'{project_max:.2f}', 
+                        color=palette[relevant_projects.tolist().index(project)], ha='center', va='bottom')
+
+        if max_values_per_project:
+            max_data = max(max_values_per_project)
+            max_values.append(max_data)
+
         sns.stripplot(data=data, x='Project', y='Self-Intersection C_mwrm', jitter=0.55, dodge=True, palette=palette, ax=ax)
         ax.set_title(f'{title} - Self Intersections')
         ax.set_ylabel('Self Intersections (log scale)')
         ax.set_xlabel('Project')
         ax.set_yscale('log')
 
-        for project in project_folders:
-            subset = data[data['Project'] == project]
-            if not subset.empty:
-                project_max = subset['Self-Intersection C_mwrm'].max()
-                if math.isfinite(project_max):
-                    ax.text(project_folders.index(project), project_max, f'{project_max:.2f}', color=palette[project_folders.index(project)], ha='center', va='bottom')
-
-        ax.set_xticks(range(len(project_folders)))
-        ax.set_xticklabels(project_folders, rotation=25, ha='right')
+        # Set x-ticks for only relevant projects
+        ax.set_xticks(np.arange(len(relevant_projects)))
+        ax.set_xticklabels(relevant_projects, rotation=25, ha='right')
 
 # Calculate the global maximum as the maximum of all max_data values
 global_max = max(max_values)
