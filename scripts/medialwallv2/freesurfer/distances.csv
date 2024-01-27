@@ -1,4 +1,4 @@
-Project,subject_id,Hemisphere,Surface Type,Hausdorff Distance,ASSD,Chamfer Distance,Self-Intersection A_mwrm,Total Triangles A_mwrm,Colored CA VTK Path
+Project,subject_id,Hemisphere,Surface Type,Hausdorff Distance,ASSD,Chamfer Distance,Self-Intersection C_mwrm,Total Triangles A_mwrm,Colored CA VTK Path
 freesurfer,208428,lh,pial,NA,NA,NA,6,200181,NA
 freesurfer,205725,lh,pial,NA,NA,NA,11,203523,NA
 freesurfer,204420,lh,pial,NA,NA,NA,9,213946,NA
