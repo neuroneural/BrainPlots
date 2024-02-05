@@ -31,4 +31,4 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
 # Execute the Python script with the required arguments
-python ../cortexode_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "rh" --surfType "white" --project "cortexode" --project_gt_base_path "/speedrun/cortexode-data-rp/test" --project_pred_base_path "/data/users2/washbee/speedrun/CortexODE_fork/ckpts/experiment_6_A100/result"
+python ../cortexode_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "rh" --surfType "white" --project "cortexode" --project_gt_base_path "/speedrun/cortexode-data-rp/test" --project_pred_base_path "/data/users2/washbee/speedrun/CortexODE_fork/ckpts/experiment_6_A100_part2/result"

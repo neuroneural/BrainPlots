@@ -30,6 +30,8 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
+export PYTHONUNBUFFERED=1
+
 # Execute the Python script with the required arguments
 python ../rp_surface_analysis.py --subject_id "$subject_id" --project "cortexode" --base_dir $base_dir
 

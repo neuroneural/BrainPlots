@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH -n 1
-#SBATCH -c 2
-#SBATCH --mem=5g
+#SBATCH -c 4
+#SBATCH --mem=10g
 #SBATCH -p qTRDGPU
 #SBATCH -t 1-00:00
-#SBATCH -J mwrmctodelw
+#SBATCH -J mwrmdcsr
 #SBATCH -e jobs/error%A_%a.err
 #SBATCH -o jobs/out%A_%a.out
 #SBATCH -A psy53c17
@@ -31,4 +31,5 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
 # Execute the Python script with the required arguments
-python ../cortexode_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "lh" --surfType "white" --project "cortexode" --project_gt_base_path "/speedrun/cortexode-data-rp/test" --project_pred_base_path "/data/users2/washbee/speedrun/CortexODE_fork/ckpts/experiment_6_A100_part2/result"
+python ../corticalflow_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "lh" --surfType "pial" --project "corticalflow++" --project_gt_base_path "/data/users2/washbee/speedrun/deepcsr-preprocessed" --project_pred_base_path "/data/users2/washbee/speedrun/corticalflow_fork/output2/cfpp/meshes"
+

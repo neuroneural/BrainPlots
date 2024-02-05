@@ -3,6 +3,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 import csv
 import argparse
+import pandas as pd
 
 import trimesh
 
@@ -20,6 +21,35 @@ import csv
 import argparse
 # from mesh_intersection.bvh_search_tree import BVH #from torch_mesh_isect
 from intersection_count import *
+
+# Command line argument parsing
+parser = argparse.ArgumentParser(description="Distance Calculation Script")
+parser.add_argument("--base_dir", required=True, help="Base directory for STL files")
+parser.add_argument("--project", required=True, help="project name")
+parser.add_argument("--subject_id", required=True, help="Subject ID")
+args = parser.parse_args()
+
+
+# Ensure 'subject_id' in the DataFrame is of integer type
+excluded_subject_ids = None
+outliers_df = pd.read_csv('mw_outliers.csv')
+
+try:
+    excluded_subject_ids = outliers_df['subject_id'].astype(int).unique()
+except ValueError:
+    raise ValueError("subject_id column in 'mw_outliers.csv' contains non-integer values.")
+
+# Assert that args.subject_id can be converted to an integer
+try:
+    subject_id_int = int(args.subject_id)
+except ValueError:
+    raise ValueError(f"Subject ID '{args.subject_id}' is not a valid integer.")
+
+# Check if the converted args.subject_id is not in the list of excluded subject IDs
+if subject_id_int not in excluded_subject_ids:
+    print(f"Subject ID {args.subject_id} is not in the list of excluded subject IDs.")
+else:
+    print(f"Subject ID {args.subject_id} is in the list of excluded subject IDs.")
 
 def color_mesh_by_distance(mesh, tree_other):
     """Attach distances as a scalar field to each vertex of the mesh."""
@@ -181,12 +211,6 @@ def process_files_wpint(base_dir, subject_id, hemis, csv_file, project):
                    file_white ,file_pial]
             csv_writer.writerow(row)
 
-# Command line argument parsing
-parser = argparse.ArgumentParser(description="Distance Calculation Script")
-parser.add_argument("--base_dir", required=True, help="Base directory for STL files")
-parser.add_argument("--project", required=True, help="project name")
-parser.add_argument("--subject_id", required=True, help="Subject ID")
-args = parser.parse_args()
 
 # Process files
 hemis = ["lh", "rh"]
@@ -196,6 +220,12 @@ print(args.project)
 print(type(args.project))
 print(args.project == 'pialnn')
 print(args.project == 'topofit')
+
+# Assuming 'some_subject_id' is the variable you want to check
+some_subject_id = '123'  # Example subject ID you're checking for
+
+print('type excluded variable', type(excluded_subject_ids))
+print('values excluded', excluded_subject_ids)
 
 if args.project == 'pialnn':
     print('reduce types to pial due to pialnn')
@@ -214,6 +244,11 @@ process_files(args.base_dir, args.subject_id, hemis, types, csv_file, args.proje
 csv_file_intersections = "white_pial_intersections.csv"
 
 # Process files
-if args.project != 'pialnn' and args.project != 'topofit':
-    process_files_wpint(args.base_dir, args.subject_id, hemis, csv_file_intersections, args.project)
+if args.project != 'pialnn' and args.project != 'topofit':    
+    # Check if the converted args.subject_id is not in the list of excluded subject IDs
+    if subject_id_int not in excluded_subject_ids:
+        print(f"Subject ID {args.subject_id} is not in the list of excluded subject IDs.")
+        process_files_wpint(args.base_dir, args.subject_id, hemis, csv_file_intersections, args.project)
+    else:
+        print(f"Subject ID {args.subject_id} is in the list of excluded subject IDs.")
 

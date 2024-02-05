@@ -4,7 +4,7 @@
 #SBATCH --mem=5g
 #SBATCH -p qTRDGPU
 #SBATCH -t 1-00:00
-#SBATCH -J mwrmctodelw
+#SBATCH -J mwrmdcsr
 #SBATCH -e jobs/error%A_%a.err
 #SBATCH -o jobs/out%A_%a.out
 #SBATCH -A psy53c17
@@ -19,9 +19,9 @@ conda_env_path="/data/users2/washbee/anaconda3/envs/mwrm"
 source /data/users2/washbee/anaconda3/etc/profile.d/conda.sh
 conda activate "$conda_env_path"
 
-subjects_dir="/data/users2/washbee/speedrun/topofit-data"
-
+base_dir="/data/users2/washbee/speedrun/mwexperiments/BrainPlots/scripts/medialwallv2/corticalflow++"
 # Read test_subject_ids.txt into an array
+subjects_dir="/data/users2/washbee/speedrun/topofit-data"
 mapfile -t subject_ids < "${subjects_dir}/"test_subject_ids.txt
 
 # Retrieve subject id using SLURM_ARRAY_TASK_ID
@@ -31,4 +31,5 @@ subject_id=${subject_ids[$SLURM_ARRAY_TASK_ID]}
 source /data/users2/washbee/freesurfer/SetUpFreeSurfer.sh
 
 # Execute the Python script with the required arguments
-python ../cortexode_all.py --subjects_dir "$subjects_dir" --subject_id "$subject_id" --hemi "lh" --surfType "white" --project "cortexode" --project_gt_base_path "/speedrun/cortexode-data-rp/test" --project_pred_base_path "/data/users2/washbee/speedrun/CortexODE_fork/ckpts/experiment_6_A100_part2/result"
+python ../rp_surface_analysis.py --subject_id "$subject_id" --project "corticalflow++" --base_dir $base_dir
+
