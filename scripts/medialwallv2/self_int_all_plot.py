@@ -1,17 +1,15 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os
 import matplotlib as mpl
 import numpy as np
+import os
 import math
 
 # Directories of the projects, sorted alphabetically
 project_folders = sorted([
-    'pialnn','topofit',
-    'cortexode_rk4', 'deepcsr',
-    'cortexode_euler', 'corticalflow', 'freesurfer',
-    'vox2cortex'
+    'pialnn', 'topofit', 'cortexode_rk4', 'deepcsr',
+    'cortexode_euler', 'corticalflow', 'corticalflow++', 'freesurfer', 'vox2cortex'
 ])
 
 # Load outliers
@@ -28,91 +26,66 @@ for project in project_folders:
     df['Project'] = project
     all_data = pd.concat([all_data, df], ignore_index=True)
 
-# Set global font size using rcParams
+# Define a list of marker styles
+markers = ["o", "s", "^", "P", "*", "X", "D", "v", "h"]
+
+# Create a dictionary to map each project to a marker style
+marker_map = {project: marker for project, marker in zip(project_folders, markers)}
+
+# Set plot aesthetics
+sns.set(style="whitegrid")
 mpl.rcParams.update({'font.size': 16})
 
 # Define subplot size and aspect ratio
 subplot_height = 5
 subplot_aspect = 1.2
 
-# Create separate subplots for LH Pial, RH Pial, LH White, and RH White with logarithmic y-axis scale
+# Determine the global max and min values for setting a consistent scale
+global_max = all_data['Self-Intersection C_mwrm'].max()
+global_min = all_data['Self-Intersection C_mwrm'][all_data['Self-Intersection C_mwrm'] > 0].min()  # Avoid log(0) issue
+
+# Adjust global max for annotation space
+global_max_adjusted = global_max * 1.1  # Increase slightly for annotation
+
+# Create figure and axes for subplots
 fig, axes = plt.subplots(2, 2, figsize=(2 * subplot_aspect * subplot_height, 2 * subplot_height))
-
-# Filter for LH Pial data
-lh_pial_data = all_data[(all_data['Hemisphere'] == 'lh') & (all_data['Surface Type'] == 'pial')]
-
-# Filter for RH Pial data
-rh_pial_data = all_data[(all_data['Hemisphere'] == 'rh') & (all_data['Surface Type'] == 'pial')]
-
-# Filter for LH White data
-lh_white_data = all_data[(all_data['Hemisphere'] == 'lh') & (all_data['Surface Type'] == 'white')]
-
-# Filter for RH White data
-rh_white_data = all_data[(all_data['Hemisphere'] == 'rh') & (all_data['Surface Type'] == 'white')]
-
-# Create subplots for LH Pial, RH Pial, LH White, and RH White
-subplots = {
-    'LH Pial': lh_pial_data,
-    'RH Pial': rh_pial_data,
-    'LH White': lh_white_data,
-    'RH White': rh_white_data
-}
-
-# Initialize a list to store maximum values for each subplot
-max_values = []
 
 # Create a fixed palette for all projects
 fixed_palette = sns.color_palette("husl", len(project_folders))
 
-# Create a dictionary to map each project to a color
-color_map = {project: color for project, color in zip(project_folders, fixed_palette)}
+# Mapping project names to numerical values for y-axis
+project_mapping = {name: i for i, name in enumerate(project_folders)}
 
-for i, (title, data) in enumerate(subplots.items()):
-    ax = axes[i // 2, i % 2]
-
-    # Filter projects that have data for this specific subplot
-    relevant_projects = data['Project'].unique()
+# Filter and plot data for each subplot
+for i, (hemisphere, surface_type) in enumerate([('LH', 'pial'), ('RH', 'pial'), ('LH', 'white'), ('RH', 'white')]):
+    ax = axes.flatten()[i]
+    data = all_data[(all_data['Hemisphere'] == hemisphere.lower()) & (all_data['Surface Type'] == surface_type.lower())]
 
     if not data.empty:
-        max_values_per_project = []
-
-        for project in relevant_projects:
+        # Calculate and annotate the maximum value for each project
+        for project in project_folders:
             project_data = data[data['Project'] == project]
-            project_max = project_data['Self-Intersection C_mwrm'].max()
-            if math.isfinite(project_max):
-                max_values_per_project.append(project_max)
-                ax.text(relevant_projects.tolist().index(project), project_max, f'{project_max:.2f}', 
-                        color=color_map[project], ha='center', va='bottom')
+            if not project_data.empty:
+                jittered_y = project_mapping[project] + (np.random.rand(len(project_data)) - 0.5) * 0.5
+                max_value = project_data['Self-Intersection C_mwrm'].max()
+                ax.scatter(project_data['Self-Intersection C_mwrm'], jittered_y,
+                           s=15, alpha=0.6, label=project,
+                           color=fixed_palette[project_folders.index(project)],
+                           marker=marker_map[project])
+                
+                # Annotate max value
+                ax.text(max_value, project_mapping[project], f'{max_value:.2f}',
+                        color='black', ha='left', va='center', fontsize=9)
 
-        if max_values_per_project:
-            max_data = max(max_values_per_project)
-            max_values.append(max_data)
-
-        # Plot using the color map
-        sns.stripplot(data=data, x='Project', y='Self-Intersection C_mwrm', jitter=0.55, dodge=True, 
-                      palette=[color_map[project] for project in relevant_projects], ax=ax)
-        ax.set_title(f'{title} - Self Intersections')
-        ax.set_ylabel('Self Intersections (log scale)')
-        ax.set_xlabel('Project')
-        ax.set_yscale('log')
-
-        # Set x-ticks for only relevant projects
-        ax.set_xticks(np.arange(len(relevant_projects)))
-        ax.set_xticklabels(relevant_projects, rotation=25, ha='right')
-
-
-# Calculate the global maximum as the maximum of all max_data values
-global_max = max(max_values)
-
-# Add a value of 10^5 to the global max
-global_max += 1e5
-
-# Set the same y-axis limits for all subplots using the global maximum for the logarithmic scale
-for ax in axes.flatten():
-    ax.set_ylim(1, global_max)
+    ax.set_title(f'{hemisphere} {surface_type.capitalize()} - Self Intersections')
+    ax.set_xscale('log')
+    ax.set_xlim(left=global_min, right=global_max_adjusted)  # Apply global scale with adjustment for annotation
+    ax.set_xlabel('Self-Intersection C_mwrm (log scale)')
+    ax.set_yticks(range(len(project_folders)))
+    ax.set_yticklabels(project_folders)
+    ax.set_ylabel('Project')
 
 plt.tight_layout()
-
-# Save the plot
-plt.savefig('all_surface_types_self_intersection_log_scale_scatter_plot.png')
+plt.savefig('self_intersections_scatter.png')
+plt.savefig('self_intersections_scatter.svg')
 plt.close()
