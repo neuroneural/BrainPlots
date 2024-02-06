@@ -5,7 +5,7 @@ import shutil
 project_folders = sorted([
     'pialnn', 'topofit',
     'cortexode_rk4', 'deepcsr',
-    'cortexode_euler', 'corticalflow', 'freesurfer',
+    'cortexode_euler', 'corticalflow','corticalflow++', 'freesurfer',
     'vox2cortex'
 ])
 
