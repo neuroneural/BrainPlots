@@ -38,34 +38,23 @@ def plot_min_memory_required(grouped_stats):
     sns.set(style="whitegrid")
     fig, ax = plt.subplots(figsize=(18, 6), dpi=100)
 
-    # Define colors for each category
-    colors = {
-        'pial': 'skyblue', 
-        'white': 'lightgreen', 
-        'both': 'grey',  # Default color for "Both"
-        'all': 'orange'   # Special color for projects with "_all"
-    }
+    colors = {'pial': 'skyblue', 'white': 'lightgreen', 'both': 'grey', 'all': 'orange'}
     bar_width = 0.25
 
     sorted_projects = sorted(grouped_stats.keys())
     x_positions = np.arange(len(sorted_projects))
 
-    # Legend tracking to ensure labels are added only once
     legend_labels = {'pial': False, 'white': False, 'both': False, 'all': False}
 
     for idx, project in enumerate(sorted_projects):
         project_data = grouped_stats[project]
         
-        # Determine if the project is a special "_all" project
         is_all_project = 'all' in project
         is_pial_project = 'pial' in project
         is_white_project = 'white' in project
         is_both_project = 'both' in project
-        color_for_all_or_both = colors['all'] if is_all_project else colors['both']
 
         for variant, stats in project_data.items():
-            # Assign colors based on variant and whether it's a special "_all" project
-            print(variant)
             bar_color = None
             if is_all_project:
                 bar_color = colors['all']
@@ -78,7 +67,6 @@ def plot_min_memory_required(grouped_stats):
                 
             label = 'all' if is_all_project else variant.lower()
             
-            # Adjust bar positions for 'pial' and 'white'; use the center position for 'both' or '_all'
             if variant in ['pial', 'white']:
                 pos_offset = idx + (bar_width if variant == 'white' else -bar_width)/2.0
                 ax.bar(pos_offset, stats[0], color=colors[variant], width=bar_width, edgecolor='black', label=label if not legend_labels[variant] else "")
@@ -94,9 +82,7 @@ def plot_min_memory_required(grouped_stats):
     ax.set_xticklabels(sorted_projects, rotation=45, ha="right")
     ax.set_title('Minimum Memory Required (MB)')
 
-    # Create legend
     handles, labels = ax.get_legend_handles_labels()
-    # Sort handles and labels to maintain a consistent order
     sorted_handles_labels = sorted(zip(handles, labels), key=lambda x: x[1])
     sorted_handles, sorted_labels = zip(*sorted_handles_labels)
     ax.legend(sorted_handles, sorted_labels, title="Type")
@@ -104,8 +90,8 @@ def plot_min_memory_required(grouped_stats):
     plt.tight_layout()
     plt.show()
     plt.savefig('grouped_benchmarks_corrected.png')
+    plt.savefig('grouped_benchmarks_corrected.svg')
 
-# Define your project folders here
 project_folders = [
     ("cortexode_euler_lh_both", "/data/users2/washbee/speedrun/CortexODE_fork/singularity/benchmarks/euler"),
     ("cortexode_rk4_lh_both", "/data/users2/washbee/speedrun/CortexODE_fork/singularity/benchmarks/rk4"),
@@ -119,12 +105,9 @@ project_folders = [
     ("pialnn_lh_pial", "/data/users2/washbee/speedrun/PialNN_fork/singularity/benchmarks"),
 ]
 
-# Process each project
 project_stats = [process_project(name, path) for name, path in project_folders]
 project_names = [name for name, _ in project_folders]
 
-# Group processed data for plotting
 grouped_stats = group_projects(project_stats, project_names)
 
-# Plot the minimum memory required with the corrected legend
 plot_min_memory_required(grouped_stats)
