@@ -52,7 +52,7 @@ def add_combined_meshes_to_subplot(plotter, project, surface, orientation, row_i
     label = ""  # Initialize label variable
 
     if mesh_key in meshes:
-        actor = plotter.add_mesh(meshes[mesh_key], cmap='inferno_r', clim=[percentile_Low, percentile_High])
+        actor = plotter.add_mesh(meshes[mesh_key], cmap='PiYG_r', clim=[percentile_Low, percentile_High])
         set_custom_view(plotter, orientation)
         if with_labels:
             plotter.add_scalar_bar(title="Distance", label_font_size=10, title_font_size=12, color='black')
