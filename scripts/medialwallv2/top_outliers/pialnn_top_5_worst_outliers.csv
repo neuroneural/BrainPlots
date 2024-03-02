@@ -1,0 +1,6 @@
+Project,subject_id,Hemisphere,Surface Type,Hausdorff Distance,ASSD,Chamfer Distance,Self-Intersection C_mwrm,Total Triangles C_mwrm,Colored CA VTK Path
+pialnn,223929,lh,pial,4.472411866394718,0.5437843290652191,1.0875686581304382,56796,362825,pialnn_223929_CA_lh_pial_distanceMesh.vtk
+pialnn,207628,lh,pial,4.195777679062847,0.5436184335608554,1.0872368671217107,55438,294231,pialnn_207628_CA_lh_pial_distanceMesh.vtk
+pialnn,268749,lh,pial,4.077709300489661,0.5307021531868206,1.0614043063736411,51404,303840,pialnn_268749_CA_lh_pial_distanceMesh.vtk
+pialnn,270332,lh,pial,3.8324420536934714,0.5496811795360337,1.0993623590720674,50487,333858,pialnn_270332_CA_lh_pial_distanceMesh.vtk
+pialnn,207628,rh,pial,4.408717932527832,0.5507184549927242,1.1014369099854484,48859,291282,pialnn_207628_CA_rh_pial_distanceMesh.vtk

@@ -1,0 +1,6 @@
+Project,subject_id,Hemisphere,Surface Type,Hausdorff Distance,ASSD,Chamfer Distance,Self-Intersection C_mwrm,Total Triangles C_mwrm,Colored CA VTK Path
+topofit,214625,rh,white,3.5792690665066424,0.356807920473556,0.7136158409471121,351,300806,topofit_214625_CA_rh_white_distanceMesh.vtk
+topofit,214423,lh,white,6.629227717729497,0.3751398531192311,0.7502797062384622,267,302574,topofit_214423_CA_lh_white_distanceMesh.vtk
+topofit,212419,lh,white,5.119960099355641,0.3480799335588301,0.6961598671176603,256,300866,topofit_212419_CA_lh_white_distanceMesh.vtk
+topofit,207628,rh,white,6.710225658020481,0.3710790917986645,0.742158183597329,250,302413,topofit_207628_CA_rh_white_distanceMesh.vtk
+topofit,214423,rh,white,6.714479444398847,0.3755041213884189,0.7510082427768379,240,304080,topofit_214423_CA_rh_white_distanceMesh.vtk

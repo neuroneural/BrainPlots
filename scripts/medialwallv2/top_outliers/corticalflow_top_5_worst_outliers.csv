@@ -1,0 +1,6 @@
+Project,subject_id,Hemisphere,Surface Type,Hausdorff Distance,ASSD,Chamfer Distance,Self-Intersection C_mwrm,Total Triangles C_mwrm,Colored CA VTK Path
+corticalflow,209329,lh,pial,5.071929851525892,0.4704203526252778,0.9408407052505556,32137,785785,corticalflow_209329_CA_lh_pial_distanceMesh.vtk
+corticalflow,223929,lh,pial,5.466514181195943,0.4996241939802304,0.9992483879604608,28949,777581,corticalflow_223929_CA_lh_pial_distanceMesh.vtk
+corticalflow,249947,lh,pial,5.2412306671170565,0.4526432867804982,0.9052865735609964,27900,783234,corticalflow_249947_CA_lh_pial_distanceMesh.vtk
+corticalflow,257542,lh,pial,5.142820987278256,0.4595386871070913,0.9190773742141826,27424,784878,corticalflow_257542_CA_lh_pial_distanceMesh.vtk
+corticalflow,268749,lh,pial,5.0753917239060575,0.4809479016091313,0.9618958032182628,26359,783966,corticalflow_268749_CA_lh_pial_distanceMesh.vtk
