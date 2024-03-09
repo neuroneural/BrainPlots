@@ -85,12 +85,21 @@ def plot_grouped_project_statistics(grouped_stats):
         # Add legend for the first plot
         if metric == 'MinMemory':
             handles, labels = axs[idx].get_legend_handles_labels()
-            unique_labels = set(labels)
+            unique_labels = list(set(labels))
             unique_handles = [handles[labels.index(label)] for label in unique_labels]
-            axs[idx].legend(unique_handles, unique_labels, loc='upper right')
+            # Create custom legend for surface types
+            surface_legend_labels = {
+                'pial': 'Pial',
+                'white': 'White',
+                'both': 'Both',
+                'all': 'All'
+            }
+            surface_legend_patches = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=label) for color, label in zip(['skyblue', 'lightgreen', 'orange', 'red'], surface_legend_labels.values())]
+            axs[idx].legend(handles=unique_handles + surface_legend_patches, labels=unique_labels + list(surface_legend_labels.values()), loc='upper right')
 
     plt.tight_layout()
     plt.savefig('grouped_benchmarks_corrected.png')
+    plt.savefig('grouped_benchmarks_corrected.svg')
 
 # Example project folders list
 project_folders = [
