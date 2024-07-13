@@ -44,6 +44,6 @@ for file_name in csv_files:
         destination_path = os.path.join(current_directory, f"{base_name}_{value2}_C_mwrm_{value3}_{surface_type}.stl")
 
     # Copy the file from the relative path to the current directory
-    shutil.copy(relative_path, destination_path)    
-        
+    shutil.copy(relative_path, destination_path)
+    
     print(f"Copied: {relative_path} to {destination_path}")

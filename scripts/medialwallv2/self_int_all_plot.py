@@ -19,6 +19,28 @@ excluded_subject_ids = outliers_df['subject_id'].unique()
 # Aggregate data from all projects
 all_data = pd.DataFrame()
 
+
+###################
+
+# Directory to save the output CSV files, update as needed
+output_dir = 'top_outliers'  # Ensure this directory exists or create it
+os.makedirs(output_dir, exist_ok=True)  # Create the directory if it doesn't exist
+
+for project in project_folders:
+    file_path = os.path.join( project, 'distances.csv')
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+        df = df[~df['subject_id'].isin(excluded_subject_ids)]
+        # Sort by 'Self-Intersection C_mwrm' in descending order to get the worst cases
+        sorted_df = df.sort_values(by='Self-Intersection C_mwrm', ascending=False)
+        # Get top 5 outliers
+        top_5_outliers = sorted_df.head(5)
+        # Specify the output file path for the top 5 outliers CSV
+        output_file_path = os.path.join(output_dir, f'{project}_top_5_worst_outliers.csv')
+        # Save the top 5 outliers to a CSV file
+        top_5_outliers.to_csv(output_file_path, index=False)
+
+###################
 for project in project_folders:
     file_path = os.path.join(project, 'distances.csv')
     df = pd.read_csv(file_path)

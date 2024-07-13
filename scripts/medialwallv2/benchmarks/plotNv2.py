@@ -37,15 +37,23 @@ def group_projects(project_stats, project_names):
         grouped_stats[base_name][suffix] = stats
     return grouped_stats
 
+import matplotlib as mpl
+
 def plot_grouped_project_statistics(grouped_stats):
-    sns.set(style="whitegrid")
-    fig, axs = plt.subplots(1, 3, figsize=(24, 6), dpi=100)
+    # Set base font size
+    base_font_size = 10
+    double_font_size = base_font_size * 4.5  # Double the font size
+    sns.set(style="whitegrid", rc={"font.size":double_font_size,"axes.titlesize":double_font_size,"axes.labelsize":double_font_size})
+    mpl.rcParams['xtick.labelsize'] = double_font_size
+    mpl.rcParams['ytick.labelsize'] = double_font_size
+    mpl.rcParams['legend.title_fontsize'] = double_font_size
+
+    fig, axs = plt.subplots(1, 3, figsize=(55, 17), dpi=300)
 
     for idx, metric in enumerate(['MinMemory', 'ExecutionTimes', 'MaxGPU']):
         data = []
         labels = []
         colors = []
-        legend_labels = {'pial': False, 'white': False, 'both': False, 'all': False}
         for project_name, data_dict in grouped_stats.items():
             for surface_type, values in data_dict.items():
                 if metric == 'ExecutionTimes':
@@ -55,6 +63,7 @@ def plot_grouped_project_statistics(grouped_stats):
                 else:
                     data.append(values[0] if metric == 'MinMemory' else values[2])
                     labels.append(f"{project_name}_{surface_type}")
+                # Define colors based on the project name or surface type
                 if 'all' in project_name or 'all' in surface_type:  # 'all' projects
                     colors.append('red')
                 elif 'both' in project_name or 'both' in surface_type:  # 'both' projects
@@ -66,38 +75,43 @@ def plot_grouped_project_statistics(grouped_stats):
                 else:
                     colors.append('grey')
         
+        # Plot configurations
         if metric == 'ExecutionTimes':
             sns.boxplot(ax=axs[idx], data=pd.DataFrame({ "Execution Time": data, "Project": labels }), x='Project', y='Execution Time', palette=colors, showfliers=False)
-            axs[idx].set_xticklabels(axs[idx].get_xticklabels(), rotation=45, ha="right")
-            axs[idx].set_title('Execution Times')
-            axs[idx].set_yscale('log')  # Set log scale for y-axis
-            axs[idx].set_ylim(10, 150)  # Set y-axis limits
+            axs[idx].set_xticklabels(axs[idx].get_xticklabels(), rotation=45, ha="right", fontsize=double_font_size)
+            axs[idx].set_yscale('log')
+            axs[idx].set_ylim(10, 150)
             axs[idx].yaxis.set_major_formatter(ScalarFormatter())
-            axs[idx].set_yticks([10,20,30,40,100])  # Set y-axis ticks
-            
+            axs[idx].set_yticks([10, 20, 30, 40, 100])
+            axs[idx].set_title('Compute Time Distribution (seconds)', fontsize=double_font_size)
+            axs[idx].set_ylabel('Execution Time (s)', fontsize=double_font_size)
         else:
             sns.barplot(ax=axs[idx], x=labels, y=data, palette=colors)
-            axs[idx].set_xticklabels(labels, rotation=45, ha="right")
-            axs[idx].set_title('Minimum Memory Required (MB)' if metric == 'MinMemory' else 'Maximum GPU Memory Used (MiB)')
-        
-        axs[idx].set_ylabel(metric)
+            axs[idx].set_xticklabels(labels, rotation=45, ha="right", fontsize=double_font_size)
+            title = 'Minimum System Memory (MB)' if metric == 'MinMemory' else 'Peak GPU Memory (MiB)'
+            axs[idx].set_title(title, fontsize=double_font_size)
+            label = 'System Memory (MB)' if metric == 'MinMemory' else 'GPU Memory (MiB)'
+            
+            axs[idx].set_ylabel(label, fontsize=double_font_size)
+            #axs[idx].set_ylabel('Execution Time (s)', fontsize=double_font_size)
+        #axs[idx].set_ylabel(metric, fontsize=double_font_size)
 
-        # Add legend for the first plot
+        # Legend configuration
         if metric == 'MinMemory':
             handles, labels = axs[idx].get_legend_handles_labels()
             unique_labels = list(set(labels))
             unique_handles = [handles[labels.index(label)] for label in unique_labels]
-            # Create custom legend for surface types
             surface_legend_labels = {
                 'pial': 'Pial',
                 'white': 'White',
                 'both': 'Both',
                 'all': 'All'
             }
-            surface_legend_patches = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=label) for color, label in zip(['skyblue', 'lightgreen', 'orange', 'red'], surface_legend_labels.values())]
-            axs[idx].legend(handles=unique_handles + surface_legend_patches, labels=unique_labels + list(surface_legend_labels.values()), loc='upper right')
+            surface_legend_patches = [mpl.lines.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=label) for color, label in zip(['skyblue', 'lightgreen', 'orange', 'red'], surface_legend_labels.values())]
+            axs[idx].legend(handles=unique_handles + surface_legend_patches, labels=unique_labels + list(surface_legend_labels.values()), loc='upper right', fontsize=double_font_size)
 
-    plt.tight_layout()
+    # plt.tight_layout()
+    plt.tight_layout(pad=1.0, w_pad=0.5, h_pad=1.0)
     plt.savefig('grouped_benchmarks_corrected.png')
     plt.savefig('grouped_benchmarks_corrected.svg')
 

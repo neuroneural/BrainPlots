@@ -30,7 +30,7 @@ project = args.project
 project_gt_base_path = args.project_gt_base_path
 project_pred_base_path = args.project_pred_base_path
 
-proj_gt_path = os.path.join(project_gt_base_path, subject_id, f'{hemi}_{surfType}.ply')
+# proj_gt_path = os.path.join(project_gt_base_path,subject_id, f'{hemi}_{surfType}.stl')#todo
 fs_gt_path = os.path.join(subjects_dir,subject_id,'surf',f'{hemi}.{surfType}.stl')
 file_path_fs = os.path.join(subjects_dir,subject_id,'surf',f'{hemi}.{surfType}')
 
@@ -45,44 +45,51 @@ if not os.path.exists(fs_gt_path):
     # File does not exist, execute the bash command
     subprocess.run(bash_command, shell=True)
 
-source_mesh = pv.read(proj_gt_path)#project's transformed ground truth
-save_mesh(source_mesh,f"{project}_{subject_id}_B_{hemi}_{surfType}.stl",'stl')
+# source_mesh = pv.read(proj_gt_path)#project's transformed ground truth
+# save_mesh(source_mesh,f"{project}_{subject_id}_B_{hemi}_{surfType}.stl",'stl')
 
 target_mesh = pv.read(fs_gt_path)#Freesurfer
 save_mesh(target_mesh,f"{project}_{subject_id}_A_{hemi}_{surfType}.stl",'stl')
+save_mesh(target_mesh,f"{project}_{subject_id}_BA_{hemi}_{surfType}.stl",'stl') # cortexode only
 
-centered_source, centering_matrix = alignCentersAndGetMatrix(target_mesh, source_mesh)
-
-scaled_source, scaling_matrix = scaleToMatchBoundingBox(centered_source, target_mesh)
-
-aligned_source, icp_matrix = remove_medial_wall._alignMeshesAndGetMatrix(target_mesh, scaled_source, rigid=False)#maybe needs to be True
-
-print('aligned source type',type(aligned_source))
-
+source_mesh = target_mesh  # cortexode only
+aligned_source = target_mesh # cortexode only
 save_mesh(aligned_source,f"{project}_{subject_id}_BA_{hemi}_{surfType}.stl",'stl') 
 
-combined_transformation_matrix = icp_matrix @ scaling_matrix @ centering_matrix #correct order? 
+combined_transformation_matrix = np.eye(4) # cortexode only
+
+############# unit test for transformation matrix being equivalent to the steps to obtain it
+# test_mesh = source_mesh.copy().transform(combined_transformation_matrix)
+# t_p = cKDTree(test_mesh.points)
+# t_a = cKDTree(aligned_source.points)
+# d1, _ = t_a.query(t_p.data)
+# d2, _ = t_p.query(t_a.data)
+# hd = max(np.max(d1), np.max(d2))
+# print('hd',hd)
+# assert hd < .0001
+#############
 
 # Save the combined transformation matrix as a pickle file
 matrix_filename = f"{project}_{subject_id}_{hemi}_{surfType}_transformation_matrix.pkl"
 with open(matrix_filename, 'wb') as matrix_file:
     pickle.dump(combined_transformation_matrix, matrix_file)
+#adni_lh_212419.white
+pred_path = os.path.join(project_pred_base_path,
+    f'adni_{hemi}_{subject_id}.{surfType}.stl')
+pred_path_fs = os.path.join(project_pred_base_path,
+    f'adni_{hemi}_{subject_id}.{surfType}')
 
-if 'lh' in hemi and 'pial' in surfType:
-    pred_path = os.path.join(project_pred_base_path,
-                        f'{subject_id}_epoch81_struc2_meshpred.ply')
-elif 'lh' in hemi and 'white' in surfType:
-    pred_path = os.path.join(project_pred_base_path,
-                        f'{subject_id}_epoch81_struc0_meshpred.ply')
-elif 'rh' in hemi and 'pial' in surfType:
-    pred_path = os.path.join(project_pred_base_path,
-                        f'{subject_id}_epoch81_struc3_meshpred.ply')
-elif 'rh' in hemi and 'white' in surfType:
-    pred_path = os.path.join(project_pred_base_path,
-                        f'{subject_id}_epoch81_struc1_meshpred.ply')
-else:#201818_epoch81_struc1_meshpred.ply
-    assert False, 'error in filename mapping'
+bash_command = f"mris_convert {pred_path_fs} {pred_path}"
 
+print('bash_command',bash_command)
+
+# Check if the file exists
+if not os.path.exists(pred_path):
+    print('executing bash command')
+    # File does not exist, execute the bash command
+    subprocess.run(bash_command, shell=True)
+else:
+    print('pred_path exists')
 third_mesh = pv.read(pred_path)
 save_mesh(third_mesh,f"{project}_{subject_id}_C_{hemi}_{surfType}.stl",'stl')
 
@@ -100,8 +107,8 @@ if not os.path.exists(mw_file_path):
 medial_wall = pv.read(mw_file_path)
 medial_wall.save(f"{project}_{subject_id}_mw_{hemi}_{surfType}.ply", binary=True)
 
-transformed_medial_wall = medial_wall.copy().transform(np.linalg.inv(combined_transformation_matrix))
-transformed_medial_wall.save(f"{project}_{subject_id}_invmw_{hemi}_{surfType}.ply", binary=True)
+transformed_medial_wall = medial_wall.copy()#.transform(np.eye(4)) # cortexode only
+transformed_medial_wall.save(f"{project}_{subject_id}_invmw_{hemi}_{surfType}.ply", binary=True) 
 
 # Save the mesh
 points = transformed_medial_wall.points

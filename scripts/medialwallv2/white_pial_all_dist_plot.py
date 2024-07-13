@@ -6,16 +6,16 @@ import matplotlib as mpl
 import numpy as np
 import math
 
+# Assuming the correct paths for the datasets
+outliers_df = pd.read_csv('mw_outliers.csv')
+excluded_subject_ids = outliers_df['subject_id'].unique()
+
 # Directories of the projects, sorted alphabetically
 project_folders = sorted([
     'cortexode_rk4', 'deepcsr',
-    'cortexode_euler', 'corticalflow', 'freesurfer',
+    'cortexode_euler', 'corticalflow', 'corticalflow++', 'freesurfer',
     'vox2cortex'
 ])
-
-# Load outliers
-outliers_df = pd.read_csv('mw_outliers.csv')
-excluded_subject_ids = outliers_df['subject_id'].unique()
 
 # Aggregate data from all projects
 all_data = pd.DataFrame()
@@ -24,54 +24,59 @@ for project in project_folders:
     file_path = os.path.join(project, 'white_pial_intersections.csv')
     df = pd.read_csv(file_path)
     df = df[~df['subject_id'].isin(excluded_subject_ids)]
-    df['Project'] = project  # Add a column to identify the project
-    all_data = pd.concat([all_data, df])
+    df['Project'] = project
+    all_data = pd.concat([all_data, df], ignore_index=True)
 
 # Global font size and subplot settings
 mpl.rcParams.update({'font.size': 16})
 subplot_height = 5
 subplot_aspect = 1.2
 
-# Creating a happy color palette
+# Creating a color palette
 palette = sns.color_palette("husl", len(project_folders))
+
+# Define a list of marker styles, one for each project
+markers = ["o", "s", "^", "P", "*", "X", "D", "v"][:len(project_folders)]
 
 # Find the global maximum for 'Intersections White-Pial'
 global_max = all_data['Intersections White-Pial'].max()
 
-# Create a FacetGrid for the subplots, one for each Hemisphere
-g = sns.FacetGrid(all_data, col='Hemisphere', sharex=True, sharey=True, height=subplot_height, aspect=subplot_aspect)
-g.set(ylim=(1, global_max))  # Set lower limit to 1 for semilog scale
+# Initialize the FacetGrid
+g = sns.FacetGrid(all_data, col="Hemisphere", sharex=False, sharey=True, height=subplot_height, aspect=subplot_aspect)
+g.set(yscale="log")
+g.set(ylim=(1, global_max * 1.1))
 
-# Plot using strip plot for 'Intersections White-Pial' with happy colors and jitter
-# Modified to use semilog scale on the y-axis
-g.map_dataframe(lambda data, color: sns.stripplot(data=data, x='Project', y='Intersections White-Pial', jitter=0.55, dodge=True, palette=palette, ax=plt.gca()).set_yscale('log'))
-
-# Adjust the layout
-g.set_xticklabels(rotation=25, ha='right')
-for ax, hemisphere in zip(g.axes.flatten(), ['lh', 'rh']):
-    if hemisphere == 'lh':
-        ax.set_title("Left Hemisphere", fontsize=14)
-    else:
-        ax.set_title('Right Hemisphere', fontsize=14)
-    ax.set_ylabel('Intersections White-Pial', fontsize=14)
-    ax.set_xlabel('Project', fontsize=14)
-
-    # Getting the positions of the x-ticks (projects)
-    xticks = [tick.get_text() for tick in ax.get_xticklabels()]
-    
-    # Annotating each project's maximum for the respective hemisphere above its scatter plot
-    for project in project_folders:
-        project_data = all_data[(all_data['Project'] == project) & (all_data['Hemisphere'] == hemisphere)]
+# Custom function to plot with markers and annotate max values
+def plot_with_markers(data, **kwargs):
+    ax = plt.gca()  # Get the current Axes instance on the current figure
+    projects_displayed = []
+    for i, project in enumerate(project_folders):
+        project_data = data[data['Project'] == project]
         if not project_data.empty:
-            project_max = project_data['Intersections White-Pial'].max()
-            # Check if the maximum value is finite and valid
-            if math.isfinite(project_max):
-                # Find the position to place the text
-                pos = xticks.index(project)
-                ax.text(pos, project_max, f'{project_max:.2f}', color=palette[project_folders.index(project)], ha='center', va='bottom')
+            projects_displayed.append(project)
+            # Apply jitter to x-axis positions
+            jittered_x = np.random.uniform(-0.2, 0.2, size=len(project_data)) + i
+            # Plot each project with a custom marker
+            ax.scatter(jittered_x, project_data['Intersections White-Pial'], 
+                       alpha=0.6, marker=markers[i], 
+                       color=palette[i], s=20)
+            # Annotate the maximum value with the same color as the marker
+            max_value = project_data['Intersections White-Pial'].max()
+            ax.text(i, max_value, f'{max_value:.0f}', color=palette[i], ha='center', va='bottom', fontsize=12)
+
+    # Set custom x-ticks to show project names
+    ax.set_xticks(range(len(projects_displayed)))
+    ax.set_xticklabels(projects_displayed, rotation=25, ha="right")
+
+# Apply custom plotting function to each subplot in the FacetGrid
+g.map_dataframe(plot_with_markers)
+
+# Adjust axis labels and layout
+g.set_axis_labels("Project", "White-Pial Intersections")
 
 plt.tight_layout()
 
 # Save the plot
-plt.savefig('combined_white_pial_intersections_scatter_plot_semilogy.png')
+plt.savefig('white_pial_intersections.png')
+plt.savefig('white_pial_intersections.svg')
 plt.close()

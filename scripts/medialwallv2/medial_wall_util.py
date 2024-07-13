@@ -6,7 +6,6 @@ import nibabel as nib
 import numpy as np
 import os
 
-
 def run_freesurfer_command(command, subjects_dir):
     print('Running command:', command)
     try:
@@ -15,7 +14,6 @@ def run_freesurfer_command(command, subjects_dir):
     except subprocess.CalledProcessError as e:
         print(f"Error running command: {command}")
         raise e
-
 
 def create_binary_mask(label_path, num_vertices):
     label = nib.freesurfer.read_label(label_path)
@@ -34,7 +32,6 @@ def save_vertices_to_ply(vertices, file_path):
 def save_vertices_to_pickle(vertices, file_path):
     with open(file_path, 'wb') as pkl_file:
         pickle.dump(vertices, pkl_file)
-
 
 #example file_path /home/users/washbee1/mwexperiments/201818/surf/rh.white.medial_wall.ply
 import os
@@ -95,7 +92,7 @@ def createMedialWallPly(file_path):
     save_vertices_to_pickle(mw_vertices, pkl_path)
 
     print(f"Medial wall vertices saved to {ply_path} and {pkl_path}")
-
+    
     vertices, faces = white_surface
     mw_faces = [face for face in faces if np.any(medial_wall_mask[face])]
 

@@ -12,7 +12,7 @@ from scipy.spatial import cKDTree
 from scipy.spatial import KDTree
 
 import os
-import torch
+#import torch
 import numpy as np
 import trimesh
 import pyvista as pv
